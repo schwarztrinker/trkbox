@@ -13,21 +13,35 @@ import (
 type Timestamp struct {
 	Time string `json:"time"`
 	Date string `json:"date"`
+	Type string `json:"type"`
 }
 
 func main() {
 	r := mux.NewRouter()
 
+	var timestamps []Timestamp
+
 	r.HandleFunc("/checkin", func(w http.ResponseWriter, r *http.Request) {
 		// TODO save logic
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(generateCurrentTimestamp())
+		stamp := generateCurrentTimestamp("checkin")
+		timestamps = append(timestamps, stamp)
+		json.NewEncoder(w).Encode(stamp)
+
 	})
 
 	r.HandleFunc("/checkout", func(w http.ResponseWriter, r *http.Request) {
 		// TODO save logic
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(generateCurrentTimestamp())
+		stamp := generateCurrentTimestamp("checkout")
+		timestamps = append(timestamps, stamp)
+		json.NewEncoder(w).Encode(stamp)
+	})
+
+	r.HandleFunc("/list", func(w http.ResponseWriter, r *http.Request) {
+		// TODO save logic
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(timestamps)
 	})
 
 	r.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
@@ -37,6 +51,10 @@ func main() {
 	})
 
 	http.ListenAndServe(":13370", r)
+}
+
+func getAllTimestamps() {
+	panic("unimplemented")
 }
 
 // Returns a time string
@@ -62,10 +80,11 @@ func formatDigitTwoLetters(d int) string {
 }
 
 //Generates the current Timestamp struct from time and date strings
-func generateCurrentTimestamp() Timestamp {
+func generateCurrentTimestamp(t string) Timestamp {
 	year, month, day := time.Now().Date()
 	date := strconv.Itoa(year) + "-" + formatDigitTwoLetters(int(month)) + "-" + formatDigitTwoLetters(day)
 
 	stamp := Timestamp{Time: currentTime(), Date: date}
+	stamp.Type = t
 	return stamp
 }

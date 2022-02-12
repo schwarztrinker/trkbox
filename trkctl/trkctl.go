@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/user"
+	"sort"
 
 	"gopkg.in/yaml.v2"
 )
@@ -15,6 +16,7 @@ import (
 type Timestamp struct {
 	Time string `json:"time"`
 	Date string `json:"date"`
+	Type string `json:"type"`
 }
 
 type Conf struct {
@@ -29,7 +31,7 @@ func main() {
 		errorStringHandler()
 	}
 
-	// Reading the conf from user
+	// Reading the configuration file from user
 	var c Conf
 	c.getConf()
 	//fmt.Println(c)
@@ -38,19 +40,21 @@ func main() {
 
 	switch arg := argsWithProg; arg {
 	case "checkin":
-		//TODO REST call to the server
 		timestamp := checkInHandler(c)
 
-		fmt.Printf(" [Coffee!]☕ Good Morning Martin, you started working at %s %s!", timestamp.Time, timestamp.Date)
+		fmt.Printf("[Coffee!]☕ Good Morning Martin, you started working at %s %s!", timestamp.Time, timestamp.Date)
 
 	case "checkout":
-		fmt.Println("\n [Party]🎉 Closing Time - Go Home Martin, you stopped working at TODO(TIMESTAMP) !")
+		fmt.Println("\n[Party]🎉 Closing Time - Go Home Martin, you stopped working at TODO(TIMESTAMP) !")
 		//TODO REST call to the server
 
 		//TODO Print summary for todays working hours
 
+	case "list":
+		listAllHandler(c)
+
 	case "help":
-		fmt.Print(helpStringHandler())
+		helpStringHandler()
 
 	case "status":
 		fmt.Println("STATUS WIP")
@@ -63,6 +67,31 @@ func main() {
 		errorStringHandler()
 	}
 	//fmt.Printf(argsWithProg[0])
+}
+
+func listAllHandler(c Conf) {
+	resp, err := http.Get(c.URL + ":" + c.Port + "/list")
+	if err != nil {
+		log.Fatalln(err)
+	}
+	if resp.Body != nil {
+		defer resp.Body.Close()
+	}
+
+	decoder := json.NewDecoder(resp.Body)
+	var timestamps []Timestamp
+	err = decoder.Decode(&timestamps)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("NUM	DATE		TIME		TYPE")
+	sort.Slice(timestamps[:], func(i, j int) bool {
+		return timestamps[i].Date > timestamps[j].Date
+	})
+	for i, stamp := range timestamps {
+		fmt.Printf("%d	%s	%s	%s \n", i+1, stamp.Date, stamp.Time, stamp.Type)
+	}
 }
 
 func connectionTestHandler(c Conf) string {
@@ -142,7 +171,7 @@ func (c *Conf) getConf() *Conf {
 }
 
 // Generating help string
-func helpStringHandler() string {
+func helpStringHandler() {
 	multiline := `- Using trkctl ⌚ -
  
 trkctl is a CLI tool to communicate with the trkbox server
@@ -152,19 +181,19 @@ trkctl [command]
 	
 	checkin 	checks you in
 	checkout	checks you out
-	status		calculates current present time @ work
+	status		calculates current present time @ work		
 	help		shows this help message
 	info		connection test to the trkbox server
 	
 `
 
-	return multiline
+	fmt.Print(multiline)
 }
 
 // Generating help string
 func infoStringHandler(c Conf) {
-	fmt.Printf("\n Using Config from Path: %s", c.Path)
-	fmt.Println(" \n \n --> Starting Connection Tests")
+	fmt.Printf("\nUsing Config from Path: %s", c.Path)
+	fmt.Println(" \n \n--> Starting Connection Tests")
 	fmt.Println("...sending ping")
 	fmt.Printf("response: %s", connectionTestHandler(c))
 }
