@@ -8,16 +8,11 @@ import (
 	"net/http"
 	"os"
 	"os/user"
-	"sort"
+
+	util "github.com/schwarztrinker/trkbox/util"
 
 	"gopkg.in/yaml.v2"
 )
-
-type Timestamp struct {
-	Time string `json:"time"`
-	Date string `json:"date"`
-	Type string `json:"type"`
-}
 
 type Conf struct {
 	URL  string `yaml:"url"`
@@ -79,18 +74,15 @@ func listAllHandler(c Conf) {
 	}
 
 	decoder := json.NewDecoder(resp.Body)
-	var timestamps []Timestamp
+	var timestamps []util.Timestamp
 	err = decoder.Decode(&timestamps)
 	if err != nil {
 		panic(err)
 	}
 
 	fmt.Println("NUM	DATE		TIME		TYPE")
-	sort.Slice(timestamps[:], func(i, j int) bool {
-		return timestamps[i].Date > timestamps[j].Date
-	})
 	for i, stamp := range timestamps {
-		fmt.Printf("%d	%s	%s	%s \n", i+1, stamp.Date, stamp.Time, stamp.Type)
+		fmt.Printf("%d	%s	%s	%s \n", i+1, stamp.Date, stamp.Type)
 	}
 }
 
@@ -112,7 +104,7 @@ func connectionTestHandler(c Conf) string {
 	return pong
 }
 
-func checkInHandler(c Conf) Timestamp {
+func checkInHandler(c Conf) util.Timestamp {
 	resp, err := http.Get(c.URL + ":" + c.Port + "/checkin")
 	if err != nil {
 		log.Fatalln(err)
@@ -122,7 +114,7 @@ func checkInHandler(c Conf) Timestamp {
 	}
 
 	decoder := json.NewDecoder(resp.Body)
-	var t Timestamp
+	var t util.Timestamp
 	err = decoder.Decode(&t)
 	if err != nil {
 		panic(err)

@@ -6,20 +6,15 @@ import (
 	"strconv"
 	"time"
 
+	util "github.com/schwarztrinker/trkbox/util"
+
 	"github.com/gorilla/mux"
 )
-
-// TimeStamp struct
-type Timestamp struct {
-	Time string `json:"time"`
-	Date string `json:"date"`
-	Type string `json:"type"`
-}
 
 func main() {
 	r := mux.NewRouter()
 
-	var timestamps []Timestamp
+	var timestamps []util.Timestamp
 
 	r.HandleFunc("/checkin", func(w http.ResponseWriter, r *http.Request) {
 		// TODO save logic
@@ -81,10 +76,10 @@ func formatDigitTwoLetters(d int) string {
 
 //Generates the current Timestamp struct from time and date strings
 func generateCurrentTimestamp(t string) Timestamp {
-	year, month, day := time.Now().Date()
-	date := strconv.Itoa(year) + "-" + formatDigitTwoLetters(int(month)) + "-" + formatDigitTwoLetters(day)
+	//date := strconv.Itoa(year) + "-" + formatDigitTwoLetters(int(month)) + "-" + formatDigitTwoLetters(day)
 
-	stamp := Timestamp{Time: currentTime(), Date: date}
+	date := time.Now()
+	stamp := Timestamp{Date: date}
 	stamp.Type = t
 	return stamp
 }
