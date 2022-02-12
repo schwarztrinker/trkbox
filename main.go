@@ -1,47 +1,71 @@
 package main
 
 import (
-    "fmt"
-    "net/http"
-    "time"
-    "strconv"
-    "encoding/json"
+	"encoding/json"
+	"net/http"
+	"strconv"
+	"time"
 
-    "github.com/gorilla/mux"
+	"github.com/gorilla/mux"
 )
 
+// TimeStamp struct
+type Timestamp struct {
+	Time string `json:"time"`
+	Date string `json:"date"`
+}
+
 func main() {
-    r := mux.NewRouter()
+	r := mux.NewRouter()
 
-    r.HandleFunc("/checkin", func(w http.ResponseWriter, r *http.Request) {
-        year, month, day := time.Now().Date()
-        date := strconv.Itoa(year)+"-"+ strconv.Itoa(int(month))+"-"+ strconv.Itoa(day)
+	r.HandleFunc("/checkin", func(w http.ResponseWriter, r *http.Request) {
+		// TODO save logic
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(generateCurrentTimestamp())
+	})
 
-        stamp := timestamp {time: currentTime(), date: date} 
-        //fmt.Fprintf(w, "You've checked in at %s", stamp)
+	r.HandleFunc("/checkout", func(w http.ResponseWriter, r *http.Request) {
+		// TODO save logic
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(generateCurrentTimestamp())
+	})
 
-        w.Header().Set("Content-Type", "application/json")
-        w.WriteHeader(http.StatusCreated)
-        marsh, _ := json.Marshal(stamp)
-        w.Write(marsh)
-    })
+	r.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
+		// TODO save logic
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode("pong")
+	})
 
-    r.HandleFunc("/checkout", func(w http.ResponseWriter, r *http.Request) {
-        fmt.Fprintf(w, "You've checked out at %s", currentTime())
-    })
-
-    
-    http.ListenAndServe(":80", r)
+	http.ListenAndServe(":13370", r)
 }
 
-func currentTime() string{
-    currTime := time.Now()
-    hours, minutes, seconds :=  currTime.Clock()
-    out := strconv.Itoa(hours)+":"+ strconv.Itoa(minutes)+":"+ strconv.Itoa(seconds)
-    return out
+// Returns a time string
+//e.g. {12:18:12}
+func currentTime() string {
+	currTime := time.Now()
+	hours, minutes, seconds := currTime.Clock()
+	out := formatDigitTwoLetters(hours) + ":" + formatDigitTwoLetters(minutes) + ":" + formatDigitTwoLetters(seconds)
+	return out
 }
 
-type timestamp struct {
-    time string
-    date string
+//Formats single digits for time and dates to two digit strings
+//@d int
+//@out string (two digits)
+func formatDigitTwoLetters(d int) string {
+	var out string
+	if d < 10 {
+		out = "0" + strconv.Itoa(d)
+	} else {
+		out = strconv.Itoa(d)
+	}
+	return out
+}
+
+//Generates the current Timestamp struct from time and date strings
+func generateCurrentTimestamp() Timestamp {
+	year, month, day := time.Now().Date()
+	date := strconv.Itoa(year) + "-" + formatDigitTwoLetters(int(month)) + "-" + formatDigitTwoLetters(day)
+
+	stamp := Timestamp{Time: currentTime(), Date: date}
+	return stamp
 }
