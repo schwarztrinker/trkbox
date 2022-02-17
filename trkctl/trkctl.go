@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -15,9 +16,16 @@ import (
 
 var configuration Conf
 
+type SummaryToday struct {
+	Timestamps        []Timestamp `json:"timestamps"`
+	DifferenceFloat   float32     `json:"differenceFloat"`
+	TotalAbsoluteTime string      `json:"totalAbsoluteTime"`
+}
+
+// TimeStamp struct
 type Timestamp struct {
-	Date time.Time `json:"date"`
-	Type string    `json:"type"`
+	Date      time.Time `json:"date"`
+	IsCheckin bool      `json:"isCheckin"`
 }
 
 type Conf struct {
@@ -38,12 +46,12 @@ func main() {
 
 	switch arg := argsWithProg; arg {
 	case "checkin":
-		timestamp := checkInHandler()
+		timestamp := stampHandler(true)
 
 		fmt.Printf("[Coffee!]☕ Good Morning Martin, you started working at %s !", timestamp.Date)
 
 	case "checkout":
-		timestamp := checkOutHandler()
+		timestamp := stampHandler(false)
 		fmt.Printf("\n[Party]🎉 Closing Time - Go Home Martin, you stopped working at %s !", timestamp.Date)
 		//TODO REST call to the server
 
@@ -71,13 +79,38 @@ func main() {
 	//fmt.Printf(argsWithProg[0])
 }
 
+func stampHandler(isCheckin bool) Timestamp {
+	json_data, err := json.Marshal(Timestamp{Date: time.Now(), IsCheckin: isCheckin})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	resp, err := http.Post(configuration.URL+":"+configuration.Port+"/stamp", "application/json", bytes.NewBuffer(json_data))
+	if err != nil {
+		log.Fatalln(err)
+	}
+	if resp.Body != nil {
+		defer resp.Body.Close()
+	}
+
+	decoder := json.NewDecoder(resp.Body)
+	var t Timestamp
+	fmt.Print(t)
+	err = decoder.Decode(&t)
+	if err != nil {
+		panic(err)
+	}
+	return t
+}
+
 func todaySummaryHandler() {
 	var timestamps []Timestamp = getTimestampsToday()
 	loc, _ := time.LoadLocation("Europe/Berlin")
 	fmt.Println("\n --- SUMMARY FOR TODAY --- \n\n")
 	fmt.Println("NUM	DATE		TIME		TYPE")
 	for i, stamp := range timestamps {
-		fmt.Printf("%d	%s	%s	%s \n", i+1, stamp.Date.Format("2006-1-2"), stamp.Date.In(loc).Format("15:04:05"), stamp.Type)
+		fmt.Printf("%d	%s	%s	%b \n", i+1, stamp.Date.Format("2006-1-2"), stamp.Date.In(loc).Format("15:04:05"), stamp.IsCheckin)
 	}
 
 	diff := time.Now().Sub(timestamps[0].Date)
@@ -91,8 +124,27 @@ func listAllHandler() {
 	loc, _ := time.LoadLocation("Europe/Berlin")
 	fmt.Println("NUM	DATE		TIME		TYPE")
 	for i, stamp := range getAllTimestamps() {
-		fmt.Printf("%d	%s	%s	%s \n", i+1, stamp.Date.Format("2006-1-2"), stamp.Date.In(loc).Format("15:04:05"), stamp.Type)
+		fmt.Printf("%d	%s	%s	%b \n", i+1, stamp.Date.Format("2006-1-2"), stamp.Date.In(loc).Format("15:04:05"), stamp.IsCheckin)
 	}
+}
+
+func getTimestampsToday() []Timestamp {
+	resp, err := http.Get(configuration.URL + ":" + configuration.Port + "/summary/day/" + time.Now().Format("2006-01-02"))
+	if err != nil {
+		log.Fatalln(err)
+	}
+	if resp.Body != nil {
+		defer resp.Body.Close()
+	}
+
+	decoder := json.NewDecoder(resp.Body)
+	var timestamps []Timestamp
+	err = decoder.Decode(&timestamps)
+	if err != nil {
+		panic(err)
+	}
+	return timestamps
+
 }
 
 func getAllTimestamps() []Timestamp {
@@ -114,16 +166,6 @@ func getAllTimestamps() []Timestamp {
 
 }
 
-func getTimestampsToday() []Timestamp {
-	var timestamps []Timestamp
-	for _, v := range getAllTimestamps() {
-		if v.Date.Format("2006-01-02") == time.Now().Format("2006-01-02") {
-			timestamps = append(timestamps, v)
-		}
-	}
-	return timestamps
-}
-
 func connectionTestHandler() string {
 	resp, err := http.Get(configuration.URL + ":" + configuration.Port + "/ping")
 	if err != nil {
@@ -142,43 +184,7 @@ func connectionTestHandler() string {
 	return pong
 }
 
-func checkInHandler() Timestamp {
-	resp, err := http.Get(configuration.URL + ":" + configuration.Port + "/checkin")
-	if err != nil {
-		log.Fatalln(err)
-	}
-	if resp.Body != nil {
-		defer resp.Body.Close()
-	}
-
-	decoder := json.NewDecoder(resp.Body)
-	var t Timestamp
-	err = decoder.Decode(&t)
-	if err != nil {
-		panic(err)
-	}
-	return t
-}
-
-func checkOutHandler() Timestamp {
-	resp, err := http.Get(configuration.URL + ":" + configuration.Port + "/checkout")
-	if err != nil {
-		log.Fatalln(err)
-	}
-	if resp.Body != nil {
-		defer resp.Body.Close()
-	}
-
-	decoder := json.NewDecoder(resp.Body)
-	var t Timestamp
-	err = decoder.Decode(&t)
-	if err != nil {
-		panic(err)
-	}
-	return t
-
-}
-
+// UX and Config Features
 func errorStringHandler() {
 	err := fmt.Errorf("Wrong or missing arguments! Please call `trkctl help` to get help!")
 	fmt.Fprintf(os.Stderr, "error: %v\n", err)

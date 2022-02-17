@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"net/http"
-	"strconv"
 	"time"
 
 	util "github.com/schwarztrinker/trkbox/util"
@@ -11,34 +10,32 @@ import (
 	"github.com/gorilla/mux"
 )
 
+var timestamps []util.Timestamp
+
 func main() {
 	r := mux.NewRouter()
 
-	var timestamps []util.Timestamp
+	// Sample Dates for Testing
+	testDay := time.Now().AddDate(0, 0, -1)
+	timestamps = append(timestamps, util.Timestamp{Date: testDay, IsCheckin: true}, util.Timestamp{Date: testDay, IsCheckin: false})
 
-	r.HandleFunc("/checkin", func(w http.ResponseWriter, r *http.Request) {
-		// TODO save logic
-		w.Header().Set("Content-Type", "application/json")
-		stamp := generateCurrentTimestamp("checkin")
-		timestamps = append(timestamps, stamp)
-		json.NewEncoder(w).Encode(stamp)
+	// Check in and out
+	r.HandleFunc("/stamp", stampHandler).Methods("POST")
 
-	})
+	// Get summary for a specific day
+	r.HandleFunc("/summary/day/{day}", getSummaryForDay).Methods("GET")
 
-	r.HandleFunc("/checkout", func(w http.ResponseWriter, r *http.Request) {
-		// TODO save logic
-		w.Header().Set("Content-Type", "application/json")
-		stamp := generateCurrentTimestamp("checkout")
-		timestamps = append(timestamps, stamp)
-		json.NewEncoder(w).Encode(stamp)
-	})
+	// Get summary for a specific day
+	r.HandleFunc("/summary/week/{week}", func(rw http.ResponseWriter, r *http.Request) {}).Methods("GET")
 
+	// get list of all timestamps
 	r.HandleFunc("/list", func(w http.ResponseWriter, r *http.Request) {
 		// TODO save logic
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(timestamps)
-	})
+	}).Methods("GET")
 
+	// Handling a test ping to the server
 	r.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
 		// TODO save logic
 		w.Header().Set("Content-Type", "application/json")
@@ -48,38 +45,39 @@ func main() {
 	http.ListenAndServe(":13370", r)
 }
 
-func getAllTimestamps() {
-	panic("unimplemented")
-}
+func stampHandler(w http.ResponseWriter, r *http.Request) {
+	var t util.Timestamp
 
-// Returns a time string
-//e.g. {12:18:12}
-func currentTime() string {
-	currTime := time.Now()
-	hours, minutes, seconds := currTime.Clock()
-	out := formatDigitTwoLetters(hours) + ":" + formatDigitTwoLetters(minutes) + ":" + formatDigitTwoLetters(seconds)
-	return out
-}
-
-//Formats single digits for time and dates to two digit strings
-//@d int
-//@out string (two digits)
-func formatDigitTwoLetters(d int) string {
-	var out string
-	if d < 10 {
-		out = "0" + strconv.Itoa(d)
-	} else {
-		out = strconv.Itoa(d)
+	// Try to decode the request body into the struct. If there is an error,
+	// respond to the client with the error message and a 400 status code.
+	err := json.NewDecoder(r.Body).Decode(&t)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
-	return out
+
+	// Return Timestamp to successfull confirm checkin
+	w.Header().Set("Content-Type", "application/json")
+	timestamps = append(timestamps, t)
+	json.NewEncoder(w).Encode(&t)
 }
 
-//Generates the current Timestamp struct from time and date strings
-func generateCurrentTimestamp(t string) Timestamp {
-	//date := strconv.Itoa(year) + "-" + formatDigitTwoLetters(int(month)) + "-" + formatDigitTwoLetters(day)
+func getSummaryForDay(w http.ResponseWriter, r *http.Request) {
+	// getting router arg from mux
+	arg := mux.Vars(r)
+	var summary util.SummaryToday
 
-	date := time.Now()
-	stamp := Timestamp{Date: date}
-	stamp.Type = t
-	return stamp
+	// Get all Timestamps from the Day
+	var out []util.Timestamp
+	for _, v := range timestamps {
+		if v.Date.Format("2006-01-02") == arg["day"] {
+			out = append(out, v)
+		}
+	}
+	summary.Timestamps = out
+
+	// Todo Calculate working hours
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(summary)
 }
