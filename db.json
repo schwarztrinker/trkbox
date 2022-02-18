@@ -1,0 +1,14 @@
+{
+    "timestamps": [
+        {"date": "2022-02-18T07:42:31+01:00", "isCheckin": true},
+        {"date": "2022-02-18T19:42:31+01:00", "isCheckin": false},
+        {"date": "2022-02-17T07:42:31+01:00", "isCheckin": true},
+        {"date": "2022-02-17T19:42:31+01:00", "isCheckin": false},
+        {"date": "2022-02-17T07:42:31+01:00", "isCheckin": true},
+        {"date": "2022-02-15T05:42:31+01:00", "isCheckin": true},
+        {"date": "2022-02-15T08:45:31+01:00", "isCheckin": false},
+        {"date": "2022-02-15T10:42:31+01:00", "isCheckin": true},
+        {"date": "2022-02-15T19:42:31+01:00", "isCheckin": false}
+
+    ]
+}
