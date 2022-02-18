@@ -1,4 +1,4 @@
-package timestamp
+package util
 
 import "time"
 
