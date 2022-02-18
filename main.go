@@ -77,6 +77,17 @@ func getSummaryForDay(w http.ResponseWriter, r *http.Request) {
 	summary.Timestamps = out
 
 	// Todo Calculate working hours
+	// check if timestamps are correct
+	var absoluteTime time.Duration
+	if len(out)%2 == 0 && len(out) > 0 {
+		for i := range out {
+			if i%2 == 1 {
+				absoluteTime += out[i-1].Date.Sub(out[i].Date)
+			}
+
+		}
+	}
+	summary.TotalAbsoluteTime = absoluteTime
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(summary)

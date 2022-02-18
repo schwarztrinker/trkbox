@@ -17,9 +17,9 @@ import (
 var configuration Conf
 
 type SummaryToday struct {
-	Timestamps        []Timestamp `json:"timestamps"`
-	DifferenceFloat   float32     `json:"differenceFloat"`
-	TotalAbsoluteTime string      `json:"totalAbsoluteTime"`
+	Timestamps        []Timestamp   `json:"timestamps"`
+	DifferenceFloat   float32       `json:"differenceFloat"`
+	TotalAbsoluteTime time.Duration `json:"totalAbsoluteTime"`
 }
 
 // TimeStamp struct
@@ -105,16 +105,15 @@ func stampHandler(isCheckin bool) Timestamp {
 }
 
 func todaySummaryHandler() {
-	var timestamps []Timestamp = getTimestampsToday()
+	var timestamps SummaryToday = getSummaryToday()
 	loc, _ := time.LoadLocation("Europe/Berlin")
 	fmt.Println("\n --- SUMMARY FOR TODAY --- \n\n")
 	fmt.Println("NUM	DATE		TIME		TYPE")
-	for i, stamp := range timestamps {
+	for i, stamp := range timestamps.Timestamps {
 		fmt.Printf("%d	%s	%s	%b \n", i+1, stamp.Date.Format("2006-1-2"), stamp.Date.In(loc).Format("15:04:05"), stamp.IsCheckin)
 	}
 
-	diff := time.Now().Sub(timestamps[0].Date)
-	fmt.Println(diff)
+	fmt.Println(timestamps)
 
 	fmt.Println("\n [====================] 100% \n")
 }
@@ -128,7 +127,7 @@ func listAllHandler() {
 	}
 }
 
-func getTimestampsToday() []Timestamp {
+func getSummaryToday() SummaryToday {
 	resp, err := http.Get(configuration.URL + ":" + configuration.Port + "/summary/day/" + time.Now().Format("2006-01-02"))
 	if err != nil {
 		log.Fatalln(err)
@@ -138,7 +137,7 @@ func getTimestampsToday() []Timestamp {
 	}
 
 	decoder := json.NewDecoder(resp.Body)
-	var timestamps []Timestamp
+	var timestamps SummaryToday
 	err = decoder.Decode(&timestamps)
 	if err != nil {
 		panic(err)

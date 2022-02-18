@@ -9,9 +9,9 @@ type Timestamp struct {
 }
 
 type SummaryToday struct {
-	Timestamps        []Timestamp `json:"timestamps"`
-	DifferenceFloat   float32     `json:"differenceFloat"`
-	TotalAbsoluteTime string      `json:"totalAbsoluteTime"`
+	Timestamps        []Timestamp   `json:"timestamps"`
+	DifferenceFloat   float32       `json:"differenceFloat"`
+	TotalAbsoluteTime time.Duration `json:"totalAbsoluteTime"`
 }
 
 type SummaryWeek struct {
