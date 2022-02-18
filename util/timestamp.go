@@ -9,18 +9,21 @@ type Timestamps struct {
 
 // TimeStamp struct
 type Timestamp struct {
+	Id        int       `json:"id"`
 	Date      time.Time `json:"date"`
 	IsCheckin bool      `json:"isCheckin"`
 }
 
 type SummaryToday struct {
-	Timestamps        Timestamps    `json:"timestamps"`
+	TimestampsToday   Timestamps    `json:"timestamps"`
 	DifferenceFloat   float32       `json:"differenceFloat"`
 	TotalAbsoluteTime time.Duration `json:"totalAbsoluteTime"`
+	Percentage        int           `json:"percentage"`
+	IsComplete        bool          `json:"isComplete"`
 }
 
 type SummaryWeek struct {
-	Timestamps        Timestamps `json:"timestamps"`
+	TimestampsWeek    Timestamps `json:"timestamps"`
 	TotalFloat        float32    `json:"differenceFloat"`
 	TotalAbsoluteTime string     `json:"totalAbsoluteTime"`
 	TotalWorkingDays  int        `json:"totalWorkingDays"`

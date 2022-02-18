@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"sort"
 	"time"
 
 	util "github.com/schwarztrinker/trkbox/util"
@@ -13,15 +14,14 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var timestamps util.Timestamps
+var timestampsGlobal util.Timestamps
 
 func main() {
 	r := mux.NewRouter()
 
-	// Sample Dates for Testing
-	//testDay := time.Now().AddDate(0, 0, -1)
-	//timestamps = append(timestamps, util.Timestamp{Date: testDay, IsCheckin: true}, util.Timestamp{Date: testDay, IsCheckin: false})
-	timestamps.Timestamps = append(timestamps.Timestamps, readTimestampsFromDB().Timestamps...)
+	// Loading Timestamp DB
+	loadingTimestampsGlobalFromDB()
+
 	// Check in and out
 	r.HandleFunc("/stamp", stampHandler).Methods("POST")
 
@@ -31,11 +31,11 @@ func main() {
 	// Get summary for a specific day
 	r.HandleFunc("/summary/week/{week}", func(rw http.ResponseWriter, r *http.Request) {}).Methods("GET")
 
-	// get list of all timestamps
+	// get list of all timestampsGlobal
 	r.HandleFunc("/list", func(w http.ResponseWriter, r *http.Request) {
 		// TODO save logic
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(timestamps)
+		json.NewEncoder(w).Encode(timestampsGlobal)
 	}).Methods("GET")
 
 	// Handling a test ping to the server
@@ -49,7 +49,7 @@ func main() {
 }
 
 func stampHandler(w http.ResponseWriter, r *http.Request) {
-	var t util.Timestamps
+	var t util.Timestamp
 
 	// Try to decode the request body into the struct. If there is an error,
 	// respond to the client with the error message and a 400 status code.
@@ -61,7 +61,8 @@ func stampHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Return Timestamp to successfull confirm checkin
 	w.Header().Set("Content-Type", "application/json")
-	timestamps.Timestamps = append(timestamps.Timestamps, t.Timestamps...)
+	timestampsGlobal.Timestamps = append(timestampsGlobal.Timestamps, t)
+	savingTimestampsGlobalFromDB()
 	json.NewEncoder(w).Encode(&t)
 }
 
@@ -70,61 +71,99 @@ func getSummaryForDay(w http.ResponseWriter, r *http.Request) {
 	arg := mux.Vars(r)
 	var summary util.SummaryToday
 
-	// Get all Timestamps from the Day
+	// Get all timestampsGlobal from the Day
 	var out util.Timestamps
-	for _, v := range timestamps.Timestamps {
+	for _, v := range timestampsGlobal.Timestamps {
 		if v.Date.Format("2006-01-02") == arg["day"] {
 			out.Timestamps = append(out.Timestamps, v)
 		}
 	}
-	summary.Timestamps = out
+	summary.TimestampsToday = out
 
 	// Todo Calculate working hours
-	// check if timestamps are correct
-	var absoluteTime time.Duration
-	if len(out.Timestamps)%2 == 0 && len(out.Timestamps) > 0 && calculationPossible(summary.Timestamps.Timestamps) {
+	// check if timestampsGlobal are correct
+	summary.IsComplete = calculateIsComplete(out)
 
-		for i := range out.Timestamps {
-			if i%2 == 1 {
-				absoluteTime += out.Timestamps[i].Date.Sub(out.Timestamps[i-1].Date)
-			}
-
-		}
-	}
-	summary.TotalAbsoluteTime = absoluteTime
+	summary.TotalAbsoluteTime = calculateTotalPresenceDuration(out)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(summary)
 }
 
-func calculationPossible(timestamps []util.Timestamp) bool {
+func calculateTotalPresenceDuration(ts util.Timestamps) time.Duration {
+	var absoluteTime time.Duration = 0
 
+	if len(ts.Timestamps) > 1 {
+		if len(ts.Timestamps)%2 == 0 {
+
+		}
+
+		for i, _ := range ts.Timestamps {
+
+			if ts.Timestamps[i].IsCheckin && !ts.Timestamps[i-1].IsCheckin {
+				absoluteTime += ts.Timestamps[i].Date.Sub(ts.Timestamps[i-1].Date)
+			}
+
+		}
+	}
+	return absoluteTime
+}
+
+func calculateIsComplete(timestamps util.Timestamps) bool {
+	if len(timestamps.Timestamps)%2 == 0 && len(timestamps.Timestamps) > 0 && checkinIsAlternating(timestamps) {
+		return false
+	}
 	return true
 }
 
-func readTimestampsFromDB() util.Timestamps {
+func checkinIsAlternating(timestamps util.Timestamps) bool {
+	var last bool
+	for i := range timestamps.Timestamps {
+		if last == timestamps.Timestamps[i].IsCheckin {
+			return false
+		}
+
+		last = timestamps.Timestamps[i].IsCheckin
+	}
+	return true
+}
+
+func loadingTimestampsGlobalFromDB() {
 	jsonFile, err := os.Open("db.json")
 	// if we os.Open returns an error then handle it
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	// we initialize our Users array
-	var timestamps util.Timestamps
+	var timestampsGlobalStruct util.Timestamps
 
 	byteValue, err := ioutil.ReadAll(jsonFile)
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	err = json.Unmarshal(byteValue, &timestamps)
+	err = json.Unmarshal(byteValue, &timestampsGlobalStruct)
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(timestamps)
-
 	// defer the closing of our jsonFile so that we can parse it later on
 	defer jsonFile.Close()
-	return timestamps
+	timestampsGlobal.Timestamps = append(timestampsGlobal.Timestamps, timestampsGlobalStruct.Timestamps...)
+}
 
+func savingTimestampsGlobalFromDB() {
+
+	//Sort all timestamps by Date before saving
+	sort.Slice(timestampsGlobal.Timestamps, func(i, j int) bool {
+		return timestampsGlobal.Timestamps[i].Date.Before(timestampsGlobal.Timestamps[j].Date)
+	})
+
+	for i := range timestampsGlobal.Timestamps {
+		timestampsGlobal.Timestamps[i].Id = i
+	}
+
+	//save all the timestamps
+	file, _ := json.MarshalIndent(timestampsGlobal, "", " ")
+
+	_ = ioutil.WriteFile("db.json", file, 0644)
 }
