@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"sort"
+	"strconv"
 	"time"
 
 	util "github.com/schwarztrinker/trkbox/util"
@@ -24,6 +26,9 @@ func main() {
 
 	// Check in and out
 	r.HandleFunc("/stamp", stampHandler).Methods("POST")
+
+	// Check in and out
+	r.HandleFunc("/stamp/delete/{id}", deleteStampHandler).Methods("POST")
 
 	// Get summary for a specific day
 	r.HandleFunc("/summary/day/{day}", getSummaryForDay).Methods("GET")
@@ -66,6 +71,20 @@ func stampHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(&t)
 }
 
+func deleteStampHandler(w http.ResponseWriter, r *http.Request) {
+	arg := mux.Vars(r)
+	stampId, err := strconv.Atoi(arg["id"])
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Print("deleting")
+
+	timestampsGlobal.Timestamps = append(timestampsGlobal.Timestamps[:stampId], timestampsGlobal.Timestamps[stampId+1:]...)
+	savingTimestampsGlobalFromDB()
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode("YES")
+}
+
 func getSummaryForDay(w http.ResponseWriter, r *http.Request) {
 	// getting router arg from mux
 	arg := mux.Vars(r)
@@ -83,24 +102,26 @@ func getSummaryForDay(w http.ResponseWriter, r *http.Request) {
 	// Todo Calculate working hours
 	// check if timestampsGlobal are correct
 	summary.IsComplete = calculateIsComplete(out)
+	summary.TotalAbsoluteTime = calculateTotalPresenceDuration(out).Round(time.Second)
+	summary.DifferenceFloat = float32(summary.TotalAbsoluteTime.Hours())
+	summary.Percentage = int((summary.DifferenceFloat / 8) * 100)
 
-	summary.TotalAbsoluteTime = calculateTotalPresenceDuration(out)
-
+	fmt.Print(summary)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(summary)
 }
 
 func calculateTotalPresenceDuration(ts util.Timestamps) time.Duration {
-	var absoluteTime time.Duration = 0
+	var absoluteTime time.Duration
 
 	if len(ts.Timestamps) > 1 {
-		if len(ts.Timestamps)%2 == 0 {
-
-		}
 
 		for i, _ := range ts.Timestamps {
+			if i == 0 {
+				continue
+			}
 
-			if ts.Timestamps[i].IsCheckin && !ts.Timestamps[i-1].IsCheckin {
+			if ts.Timestamps[i].IsCheckin != ts.Timestamps[i-1].IsCheckin && ts.Timestamps[i-1].IsCheckin {
 				absoluteTime += ts.Timestamps[i].Date.Sub(ts.Timestamps[i-1].Date)
 			}
 
@@ -109,21 +130,21 @@ func calculateTotalPresenceDuration(ts util.Timestamps) time.Duration {
 	return absoluteTime
 }
 
-func calculateIsComplete(timestamps util.Timestamps) bool {
-	if len(timestamps.Timestamps)%2 == 0 && len(timestamps.Timestamps) > 0 && checkinIsAlternating(timestamps) {
+func calculateIsComplete(ts util.Timestamps) bool {
+	if len(ts.Timestamps)%2 == 1 || len(ts.Timestamps) <= 1 || !checkinIsAlternating(ts) {
 		return false
 	}
 	return true
 }
 
-func checkinIsAlternating(timestamps util.Timestamps) bool {
+func checkinIsAlternating(ts util.Timestamps) bool {
 	var last bool
-	for i := range timestamps.Timestamps {
-		if last == timestamps.Timestamps[i].IsCheckin {
+	for i := range ts.Timestamps {
+		if last == ts.Timestamps[i].IsCheckin {
 			return false
 		}
 
-		last = timestamps.Timestamps[i].IsCheckin
+		last = ts.Timestamps[i].IsCheckin
 	}
 	return true
 }
