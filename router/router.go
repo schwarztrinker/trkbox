@@ -6,6 +6,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/schwarztrinker/trkbox/auth"
+	"github.com/schwarztrinker/trkbox/db"
 	"github.com/schwarztrinker/trkbox/handlers"
 )
 
@@ -13,10 +14,10 @@ func Router() {
 	r := mux.NewRouter()
 
 	// Loading Timestamp DB
-	handlers.LoadingTimestampsGlobalFromDB()
+	db.LoadingTimestampsGlobalFromDB()
 
 	// Check in and out
-	r.HandleFunc("/login", auth.LoginHandler).Methods("GET")
+	r.HandleFunc("/login", auth.LoginHandler).Methods("POST")
 
 	// Check in and out
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

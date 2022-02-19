@@ -28,3 +28,15 @@ type SummaryWeek struct {
 	TotalAbsoluteTime string     `json:"totalAbsoluteTime"`
 	TotalWorkingDays  int        `json:"totalWorkingDays"`
 }
+
+type Users struct {
+	Users []User `json:"users"`
+}
+
+type User struct {
+	Username     string     `json:"username"`
+	PasswordHash string     `json:"passwordHash"`
+	Password     string     `json:"password"`
+	Salt         string     `json:"salt"`
+	Timestamps   Timestamps `json:"timestamps"`
+}

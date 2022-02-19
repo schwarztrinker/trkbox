@@ -3,19 +3,15 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
-	"sort"
 	"strconv"
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/schwarztrinker/trkbox/db"
 	"github.com/schwarztrinker/trkbox/util"
 )
-
-var timestampsGlobal util.Timestamps
 
 func HomePage(w http.ResponseWriter, r *http.Request) {
 
@@ -35,10 +31,10 @@ func StampHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	db.AddTimestampToDB(t)
+
 	// Return Timestamp to successfull confirm checkin
 	w.Header().Set("Content-Type", "application/json")
-	timestampsGlobal.Timestamps = append(timestampsGlobal.Timestamps, t)
-	savingTimestampsGlobalFromDB()
 	json.NewEncoder(w).Encode(&t)
 }
 
@@ -49,12 +45,11 @@ func DeleteStampHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
-	timestampsGlobal.Timestamps[stampId] = timestampsGlobal.Timestamps[len(timestampsGlobal.Timestamps)-1] // Copy last element to index i.
-	//timestampsGlobal.Timestamps[len(timestampsGlobal.Timestamps)-1] = ""   // Erase last element (write zero value).
-	timestampsGlobal.Timestamps = timestampsGlobal.Timestamps[:len(timestampsGlobal.Timestamps)-1] // Truncate slice.
-	savingTimestampsGlobalFromDB()
+	db.DeleteTimestampByID(stampId)
+
+	// Return to User
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode("YES")
+	json.NewEncoder(w).Encode("Timestamp deleted")
 }
 
 func GetSummaryForDay(w http.ResponseWriter, r *http.Request) {
@@ -64,7 +59,7 @@ func GetSummaryForDay(w http.ResponseWriter, r *http.Request) {
 
 	// Get all timestampsGlobal from the Day
 	var out util.Timestamps
-	for _, v := range timestampsGlobal.Timestamps {
+	for _, v := range db.TimestampsDB.Timestamps {
 		if v.Date.Format("2006-01-02") == arg["day"] {
 			out.Timestamps = append(out.Timestamps, v)
 		}
@@ -85,7 +80,7 @@ func GetSummaryForDay(w http.ResponseWriter, r *http.Request) {
 
 func ListAllTimestamps(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(timestampsGlobal)
+	json.NewEncoder(w).Encode(db.TimestampsDB)
 
 }
 
@@ -131,44 +126,4 @@ func checkinIsAlternating(ts util.Timestamps) bool {
 		last = ts.Timestamps[i].IsCheckin
 	}
 	return true
-}
-
-func LoadingTimestampsGlobalFromDB() {
-	jsonFile, err := os.Open("db.json")
-	// if we os.Open returns an error then handle it
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	var timestampsGlobalStruct util.Timestamps
-
-	byteValue, err := ioutil.ReadAll(jsonFile)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	err = json.Unmarshal(byteValue, &timestampsGlobalStruct)
-	if err != nil {
-		fmt.Println(err)
-	}
-	// defer the closing of our jsonFile so that we can parse it later on
-	defer jsonFile.Close()
-	timestampsGlobal.Timestamps = append(timestampsGlobal.Timestamps, timestampsGlobalStruct.Timestamps...)
-}
-
-func savingTimestampsGlobalFromDB() {
-
-	//Sort all timestamps by Date before saving
-	sort.Slice(timestampsGlobal.Timestamps, func(i, j int) bool {
-		return timestampsGlobal.Timestamps[i].Date.Before(timestampsGlobal.Timestamps[j].Date)
-	})
-
-	for i := range timestampsGlobal.Timestamps {
-		timestampsGlobal.Timestamps[i].Id = i
-	}
-
-	//save all the timestamps
-	file, _ := json.MarshalIndent(timestampsGlobal, "", " ")
-
-	_ = ioutil.WriteFile("db.json", file, 0644)
 }
