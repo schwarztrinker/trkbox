@@ -1,51 +1,63 @@
 package router
 
 import (
-	"encoding/json"
-	"net/http"
-
-	"github.com/gorilla/mux"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/schwarztrinker/trkbox/auth"
-	"github.com/schwarztrinker/trkbox/db"
-	"github.com/schwarztrinker/trkbox/handlers"
+	"github.com/schwarztrinker/trkbox/conf"
+	"github.com/schwarztrinker/trkbox/trk"
+
+	jwtware "github.com/gofiber/jwt/v3"
 )
 
-func Router() {
-	r := mux.NewRouter()
-
-	// Loading Timestamp DB
-	db.LoadingTimestampsGlobalFromDB()
-
-	// Check in and out
-	r.HandleFunc("/login", auth.LoginHandler).Methods("POST")
-
-	// Check in and out
-	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		auth.Authorized(w, r, handlers.HomePage)
-	}).Methods("GET")
-
-	// Check in and out
-	r.HandleFunc("/stamp", handlers.StampHandler).Methods("POST")
-
-	// Check in and out
-	r.HandleFunc("/stamp/delete/{id}", handlers.DeleteStampHandler).Methods("POST")
-
-	// Get summary for a specific day
-	r.HandleFunc("/summary/day/{day}", handlers.GetSummaryForDay).Methods("GET")
-
-	// Get summary for a specific day
-	r.HandleFunc("/summary/week/{week}", func(rw http.ResponseWriter, r *http.Request) {}).Methods("GET")
-
-	// get list of all timestampsGlobal
-	r.HandleFunc("/list", handlers.ListAllTimestamps).Methods("GET")
-
-	// Handling a test ping to the server
-	r.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
-		// TODO save logic
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode("pong")
+func SetupRouter(app *fiber.App) {
+	app.Get("/", func(c *fiber.Ctx) error {
+		return c.SendString("Your Trkbox instance is running!")
 	})
 
-	http.ListenAndServe("0.0.0.0:13370", r)
+	app.Get("/ping", func(c *fiber.Ctx) error {
+		return c.SendString("pong")
+	})
+
+	// API Middleware
+	api := app.Group("/api", logger.New())
+	api.Get("/", func(c *fiber.Ctx) error {
+		return c.SendString("Nice to see you using Trkbox! Please Login at /api/auth/login")
+	})
+
+	// Auth
+	apiAuth := api.Group("/auth")
+	apiAuth.Post("/login", auth.Login)
+	apiAuth.Post("/create", auth.CreateUser)
+
+	// Trkbox group
+	apiTrk := api.Group("/trk")
+	// Apply JWT Middleware with signing key
+	apiTrk.Use(jwtware.New(jwtware.Config{
+		SigningKey: []byte(conf.Conf.JwtSecret),
+	}))
+
+	apiTrk.Use(func(c *fiber.Ctx) error {
+		user := c.Locals("user").(*jwt.Token)
+		claims := user.Claims.(jwt.MapClaims)
+		name := claims["name"].(string)
+
+		userObj, err := auth.GetUserByUsername(name)
+		if err != nil {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "error", "message": "Incorrect User in Token", "data": err})
+		}
+
+		c.Locals("user", userObj.Username)
+		return c.Next()
+	})
+
+	apiTrk.Get("/", auth.Restricted)
+	apiTrk.Get("/list/all", trk.ListAll)
+	// apiTrk.Get("/list/date")
+	// apiTrk.Get("/list/week")
+
+	// apiTrk.Get("/summary/date")
+	// apiTrk.Get("/summary/week")
 
 }

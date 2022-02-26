@@ -1,106 +1,91 @@
 package auth
 
 import (
-	"encoding/json"
+	"errors"
 	"fmt"
-	"net/http"
-	"strings"
 	"time"
 
-	"github.com/golang-jwt/jwt"
-	"github.com/schwarztrinker/trkbox/util"
+	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v4"
+	"github.com/schwarztrinker/trkbox/conf"
+	"github.com/schwarztrinker/trkbox/db"
 	"golang.org/x/crypto/bcrypt"
 )
 
-var mySigningKey = []byte("captainjacksparrowsayshi")
+func GetUserByUsername(u string) (*db.User, error) {
+	database := db.UsersDB.Users
 
-func LoginHandler(w http.ResponseWriter, r *http.Request) {
-
-	//Implement Authentication Logic and User DB
-	var userRequested util.User
-
-	// Try to decode the request body into the struct. If there is an error,
-	// respond to the client with the error message and a 400 status code.
-	err := json.NewDecoder(r.Body).Decode(&userRequested)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	var dbUser util.User
-	if checkPasswordHash(userRequested.Password, dbUser.PasswordHash) {
-
-	}
-
-	// Genereate Token and send it to client
-	validToken, err := GenerateJWT(dbUser)
-	if err != nil {
-		fmt.Println("Failed to generate token")
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(validToken)
-
-}
-
-func hashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
-	return string(bytes), err
-}
-
-func checkPasswordHash(password, hash string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return err == nil
-}
-
-// Authorization Middleware
-func Authorized(w http.ResponseWriter, r *http.Request, handler func(w http.ResponseWriter, r *http.Request)) {
-
-	if r.Header["Authorization"] != nil && len(strings.Fields(r.Header["Authorization"][0])) > 1 {
-		potentialToken := r.Header["Authorization"][0]
-		fmt.Print(potentialToken)
-		split := strings.Split(potentialToken, " ")
-
-		token, err := jwt.Parse(split[1], func(token *jwt.Token) (interface{}, error) {
-
-			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, fmt.Errorf("There was an error")
-			}
-			return mySigningKey, nil
-		})
-
-		if err != nil {
-			fmt.Printf(err.Error())
-			fmt.Fprintf(w, err.Error())
-			return
+	for _, i := range database {
+		if i.Username == u {
+			return &i, nil
 		}
-
-		if token.Valid {
-			handler(w, r)
-		}
-	} else {
-
-		fmt.Fprintf(w, "Not Authorized or token wrong")
 	}
-
+	return nil, errors.New("No user found")
 }
 
-// Generate a token for the User
-func GenerateJWT(user util.User) (string, error) {
-	token := jwt.New(jwt.SigningMethodHS256)
+func Restricted(c *fiber.Ctx) error {
+	user := c.Locals("user").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	name := claims["name"].(string)
 
-	claims := token.Claims.(jwt.MapClaims)
+	return c.SendString("Welcome " + name + "!")
+}
 
-	claims["authorized"] = true
-	claims["client"] = user.Username
-	claims["exp"] = time.Now().Add(time.Minute * 30).Unix()
-
-	tokenString, err := token.SignedString(mySigningKey)
-
-	if err != nil {
-		fmt.Errorf("Something Went Wrong: %s", err.Error())
-		return "", err
+func Login(c *fiber.Ctx) error {
+	type LoginInput struct {
+		Identity string `json:"identity"`
+		Password string `json:"password"`
+	}
+	var input LoginInput
+	if err := c.BodyParser(&input); err != nil {
+		return err
 	}
 
-	return tokenString, nil
+	identity := input.Identity
+	password := input.Password
+
+	user, err := GetUserByUsername(identity)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "error", "message": "Error on username", "data": err})
+	}
+
+	err = bcrypt.CompareHashAndPassword(user.PasswordHash, []byte(password))
+	if err != nil {
+		fmt.Print(err)
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "error", "message": "Wrong username or password", "data": err})
+	}
+
+	// Create the Claims
+	claims := jwt.MapClaims{
+		"name": user.Username,
+		"exp":  time.Now().Add(time.Hour * 72).Unix(),
+	}
+
+	// Create token
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	// Generate encoded token and send it as response.
+	t, err := token.SignedString([]byte(conf.Conf.JwtSecret))
+	if err != nil {
+		return c.SendStatus(fiber.StatusInternalServerError)
+	}
+
+	return c.JSON(fiber.Map{"token": t})
+}
+
+func CreateUser(c *fiber.Ctx) error {
+	usr := new(db.User)
+
+	if err := c.BodyParser(&usr); err != nil {
+		return err
+	}
+
+	usr, err := GetUserByUsername(usr.Username)
+	if usr != nil && err == nil {
+		return c.Status(fiber.StatusNotAcceptable).JSON(fiber.Map{"status": "error", "message": "Username already exists"})
+	}
+
+	db.UsersDB.CreateNewUser(*usr)
+
+	return c.JSON(usr)
 }

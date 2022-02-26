@@ -1,0 +1,69 @@
+### Testing fiber
+GET http://127.0.0.1:3000/ HTTP/1.1
+
+### Testing fiber
+GET http://127.0.0.1:3000/ping HTTP/1.1
+
+### Testing fiber
+GET http://127.0.0.1:3000/api HTTP/1.1
+
+### Testing fiber
+POST http://127.0.0.1:3000/api/auth/create HTTP/1.1
+content-type: application/json
+
+{
+   "username": "olaf",
+   "password": "test1234"
+}
+
+
+### Testing fiber
+POST http://127.0.0.1:3000/api/auth/login HTTP/1.1
+content-type: application/json
+
+{
+   "identity": "olaf",
+   "password": "test1234"
+}
+
+### Testing fiber
+GET http://127.0.0.1:3000/api/trk/list/all HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDYxNDUyMzUsIm5hbWUiOiJvbGFmIn0.G7ooh0G6Cb3fHK-CG4Y1eOr8iVa9pPSbqyeFyZ7DIaI
+
+### Testing fiber
+GET http://127.0.0.1:3000/api/trk/ HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDYxNDUyMzUsIm5hbWUiOiJvbGFmIn0.G7ooh0G6Cb3fHK-CG4Y1eOr8iVa9pPSbqyeFyZ7DIaI
+
+# ### Ping Test Request
+# GET http://127.0.0.1:13370/ping HTTP/1.1
+
+# ### List all timestamps
+# GET http://127.0.0.1:13370/list HTTP/1.1
+
+# ### Send a new Timestamp to the backend
+# POST http://127.0.0.1:13370/stamp HTTP/1.1
+# content-type: application/json
+
+# {
+#    "date": "2022-02-13T07:42:31+01:00",
+#    "isCheckin": true
+# }
+
+# ### Get a summary for a specific Day e.g. 2022-02-15
+# GET http://127.0.0.1:13370/summary/day/2022-02-15 HTTP/1.1
+
+
+# ### Login and get token
+# POST http://127.0.0.1:13370/login HTTP/1.1
+# content-type: application/json
+
+# {
+#    "username": "username",
+#    "password": "password"
+# }
+
+# ### Do sample get request with a token
+# GET http://127.0.0.1:13370/ HTTP/1.1
+# content-type: application/json
+# Authorization: Baerer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRob3JpemVkIjp0cnVlLCJjbGllbnQiOiIiLCJleHAiOjE2NDU4NzI0NDd9.IYsnqk4uJ40u0qeb6QY0TWw2Ha7eGNrWc3cbyRdYKdY
+

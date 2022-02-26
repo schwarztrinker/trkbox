@@ -1,0 +1,24 @@
+# Planned API architecture
+
+## Auth Endpoints
+
+- GET /api 
+    - POST /auth/login - _Login user_ - {"identity": "foo","password": "bar"}
+    - POST /auth/create - _Create user_ - {"username": "foo","password": "bar"}
+
+## Application Endpoints
+
+- GET /api
+    - GET /trk (Only for logged in users)
+        - POST /submit - _Save a new timestamp_
+        - POST /delete/:id - _Delete a timestamp by ID_
+
+        - GET /list/all - _List all your Timestamps_
+        - GET /list/date/:date - _List all Timestamps for specific day_
+        - GET /list/week/:week - _List all Timestamps for specific week_
+        
+        - GET /summary/date/:date - _Get summary for a date_
+        - GET /summary/week/:week - _Get summary for a week_
+
+## Test Endpoints
+- GET /ping - _Returns "pong"_
