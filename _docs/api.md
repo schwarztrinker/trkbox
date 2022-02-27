@@ -21,6 +21,17 @@
         
         - GET   /summary/date/:date - _Get summary for a date_
         - GET   /summary/week/:week - _Get summary for a week_
-
 ## Test Endpoints
-- GET /ping - _Returns "pong"_
+- GET /ping - _Returns a "Pong" message_
+
+## Standardized API responses
+```JSON
+{
+    "status": "<error|success>", 
+    "message": "<generic error or success message>", 
+    "data": <Object>
+}
+```
+
+
+

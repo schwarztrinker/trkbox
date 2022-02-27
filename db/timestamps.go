@@ -43,6 +43,7 @@ func (t *Timestamps) DeleteTimestampByUuid(uuid uuid.UUID) (*Timestamp, error) {
 	return ts, nil
 }
 
+// Getter
 func (t *Timestamps) GetTimestampAndIndexByUUID(uuid uuid.UUID) (*Timestamp, int, error) {
 	for index, ts := range t.Timestamps {
 		if ts.Uuid == uuid {
@@ -67,47 +68,3 @@ func (t *Timestamps) GetTimestampsByDay(day string) (*Timestamps, error) {
 
 	return &out, nil
 }
-
-// // func DeleteTimestampByID(id int) {
-
-// // }
-
-// func LoadingTimestampsGlobalFromDB() {
-// 	jsonFile, err := os.Open("db.json")
-// 	// if we os.Open returns an error then handle it
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	}
-
-// 	var timestampsGlobalStruct util.Timestamps
-
-// 	byteValue, err := ioutil.ReadAll(jsonFile)
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	}
-
-// 	err = json.Unmarshal(byteValue, &timestampsGlobalStruct)
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	}
-// 	// defer the closing of our jsonFile so that we can parse it later on
-// 	defer jsonFile.Close()
-// 	TimestampsDB.Timestamps = append(TimestampsDB.Timestamps, timestampsGlobalStruct.Timestamps...)
-// }
-
-// func savingTimestampsGlobalFromDB() {
-
-// 	//Sort all timestamps by Date before saving
-// 	sort.Slice(TimestampsDB.Timestamps, func(i, j int) bool {
-// 		return TimestampsDB.Timestamps[i].Date.Before(TimestampsDB.Timestamps[j].Date)
-// 	})
-
-// 	for i := range TimestampsDB.Timestamps {
-// 		TimestampsDB.Timestamps[i].Id = i
-// 	}
-
-// 	//save all the timestamps
-// 	file, _ := json.MarshalIndent(TimestampsDB, "", " ")
-
-// 	_ = ioutil.WriteFile("db.json", file, 0644)
-// }

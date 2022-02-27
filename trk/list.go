@@ -7,7 +7,7 @@ import (
 
 func ListAll(c *fiber.Ctx) error {
 	user, _ := db.UsersDB.GetUserByUsername(c.Locals("username").(string))
-	return c.JSON(user.Timestamps)
+	return c.JSON(fiber.Map{"status": "success", "message": "Timestamps available for this date", "data": user.Timestamps})
 }
 
 func ListDate(c *fiber.Ctx) error {
@@ -19,5 +19,5 @@ func ListDate(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"status": "error", "message": "No timestamps found for this date", "data": nil})
 	}
 
-	return c.JSON(ts)
+	return c.JSON(fiber.Map{"status": "success", "message": "Timestamps available for this date", "data": ts})
 }
