@@ -40,6 +40,7 @@ func SetupRouter(app *fiber.App) {
 	apiTrk.Get("/whoami", auth.Whoami)
 	apiTrk.Get("/list/all", trk.ListAll)
 	apiTrk.Post("/submit", trk.SubmitTimestamp)
+	apiTrk.Post("/delete/:uuid", trk.DeleteTimestamp)
 	// apiTrk.Get("/list/date")
 	// apiTrk.Get("/list/week")
 

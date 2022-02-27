@@ -31,6 +31,7 @@ require (
 	github.com/andybalholm/brotli v1.0.4 // indirect
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/gofiber/jwt/v3 v3.2.6
+	github.com/google/uuid v1.3.0
 	github.com/klauspost/compress v1.14.4 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.33.0 // indirect

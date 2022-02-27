@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
@@ -11,17 +10,6 @@ import (
 	"github.com/schwarztrinker/trkbox/db"
 	"golang.org/x/crypto/bcrypt"
 )
-
-func GetUserByUsername(u string) (*db.User, error) {
-	database := db.UsersDB.Users
-
-	for _, i := range database {
-		if i.Username == u {
-			return &i, nil
-		}
-	}
-	return nil, errors.New("No user found")
-}
 
 func Login(c *fiber.Ctx) error {
 	type LoginInput struct {
@@ -36,7 +24,7 @@ func Login(c *fiber.Ctx) error {
 	identity := input.Identity
 	password := input.Password
 
-	user, err := GetUserByUsername(identity)
+	user, err := db.UsersDB.GetUserByUsername(identity)
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "error", "message": "Error on username", "data": err})
 	}
@@ -76,7 +64,7 @@ func CreateUser(c *fiber.Ctx) error {
 		return err
 	}
 
-	usr, err := GetUserByUsername(userInput.Username)
+	usr, err := db.UsersDB.GetUserByUsername(userInput.Username)
 	if usr != nil && err == nil {
 		return c.Status(fiber.StatusNotAcceptable).JSON(fiber.Map{"status": "error", "message": "Username already exists"})
 	}
@@ -91,7 +79,7 @@ func CheckUserFromToken(c *fiber.Ctx) error {
 	claims := user.Claims.(jwt.MapClaims)
 	name := claims["name"].(string)
 
-	userObj, err := GetUserByUsername(name)
+	userObj, err := db.UsersDB.GetUserByUsername(name)
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "error", "message": "Incorrect User in Token", "data": err})
 	}

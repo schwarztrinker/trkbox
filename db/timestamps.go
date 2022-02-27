@@ -1,7 +1,10 @@
 package db
 
 import (
+	"errors"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 // TimeStamp struct
@@ -11,22 +14,47 @@ type Timestamps struct {
 
 // TimeStamp struct
 type Timestamp struct {
-	Id        int       `json:"id"`
+	Uuid      uuid.UUID `json:"uuid"`
 	Date      time.Time `json:"date"`
 	IsCheckin bool      `json:"isCheckin"`
 }
 
-// func AddTimestampToDB(ts util.Timestamp) {
-// 	TimestampsDB.Timestamps = append(TimestampsDB.Timestamps, ts)
-// 	savingTimestampsGlobalFromDB()
-// }
+func (t *Timestamps) AppendTimestamp(ts Timestamp) *Timestamp {
+	ts.Uuid = uuid.New()
+	t.Timestamps = append(t.Timestamps, ts)
 
-// func DeleteTimestampByID(id int) {
-// 	TimestampsDB.Timestamps[id] = TimestampsDB.Timestamps[len(TimestampsDB.Timestamps)-1] // Copy last element to index i.
-// 	//timestampsGlobal.Timestamps[len(timestampsGlobal.Timestamps)-1] = ""   // Erase last element (write zero value).
-// 	TimestampsDB.Timestamps = TimestampsDB.Timestamps[:len(TimestampsDB.Timestamps)-1] // Truncate slice.
-// 	savingTimestampsGlobalFromDB()
-// }
+	UsersDB.SaveDB()
+	return &ts
+}
+
+func (t *Timestamps) DeleteTimestampByUuid(uuid uuid.UUID) *Timestamp {
+	ts, index, err := t.GetTimestampAndIndexByUUID(uuid)
+	if err != nil {
+		panic("Timestamp deletion not possible, no timestamp was found")
+	}
+
+	t.Timestamps[index] = t.Timestamps[len(t.Timestamps)-1]
+
+	// Copy last element to index i.
+	//timestampsGlobal.Timestamps[len(timestampsGlobal.Timestamps)-1] = ""   // Erase last element (write zero value).
+	t.Timestamps = t.Timestamps[:len(t.Timestamps)-1] // Truncate slice.
+	UsersDB.SaveDB()
+
+	return ts
+}
+
+func (t *Timestamps) GetTimestampAndIndexByUUID(uuid uuid.UUID) (*Timestamp, int, error) {
+	for index, ts := range t.Timestamps {
+		if ts.Uuid == uuid {
+			return &t.Timestamps[index], index, nil
+		}
+	}
+	return nil, 0, errors.New("No timestamp Found")
+}
+
+// // func DeleteTimestampByID(id int) {
+
+// // }
 
 // func LoadingTimestampsGlobalFromDB() {
 // 	jsonFile, err := os.Open("db.json")

@@ -2,6 +2,7 @@ package db
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -19,6 +20,27 @@ type User struct {
 	Username     string     `json:"username"`
 	PasswordHash []byte     `json:"passwordHash"`
 	Timestamps   Timestamps `json:"timestamps"`
+}
+
+func (p *Users) GetUserByUsername(u string) (*User, error) {
+	for index, i := range UsersDB.Users {
+		if i.Username == u {
+			return &UsersDB.Users[index], nil
+		}
+	}
+	return nil, errors.New("No user found")
+}
+
+func (u *Users) AddTimestampToUser(username string, ts Timestamp) *Users {
+	for _, i := range UsersDB.Users {
+		if i.Username == username {
+			i.Timestamps.Timestamps = append(i.Timestamps.Timestamps, ts)
+		}
+	}
+
+	UsersDB.SaveDB()
+
+	return u
 }
 
 func (u *Users) CreateNewUser(username string, password string) *Users {
@@ -64,7 +86,8 @@ func (u *Users) LoadUserDB() *Users {
 	}
 	// defer the closing of our jsonFile so that we can parse it later on
 	defer jsonFile.Close()
-	UsersDB.Users = append(UsersDB.Users, users.Users...)
+
+	UsersDB = users
 	return u
 }
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
@@ -8,6 +9,8 @@ import (
 	"github.com/schwarztrinker/trkbox/db"
 	"github.com/schwarztrinker/trkbox/router"
 )
+
+var ctx = context.Background()
 
 func main() {
 	// init fiber
@@ -17,11 +20,8 @@ func main() {
 	// loading conf from yaml file
 	conf.Conf.GetConf()
 
-	// Loading Timestamp DB
-	db.ConnectDB()
 	//db.LoadingTimestampsGlobalFromDB()
 	db.UsersDB.LoadUserDB()
-
 	// setup fiber router
 	router.SetupRouter(app)
 

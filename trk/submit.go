@@ -2,12 +2,11 @@ package trk
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/schwarztrinker/trkbox/auth"
 	"github.com/schwarztrinker/trkbox/db"
 )
 
 func SubmitTimestamp(c *fiber.Ctx) error {
-	user, err := auth.GetUserByUsername(c.Locals("username").(string))
+	user, err := db.UsersDB.GetUserByUsername(c.Locals("username").(string))
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "error", "message": "User could not be found"})
 	}
@@ -20,9 +19,7 @@ func SubmitTimestamp(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "error", "message": "Timestamp could not be parsed"})
 	}
 
-	timestamps := user.Timestamps
+	data := user.Timestamps.AppendTimestamp(t)
 
-	timestamps.Timestamps = append(timestamps.Timestamps, t)
-
-	return c.JSON(fiber.Map{"status": "success", "message": "Timestamp saved successful", "data": t})
+	return c.JSON(fiber.Map{"status": "success", "message": "Timestamp saved successful", "data": data})
 }

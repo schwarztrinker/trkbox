@@ -2,11 +2,11 @@ package trk
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/schwarztrinker/trkbox/auth"
+	"github.com/schwarztrinker/trkbox/db"
 )
 
 func ListAll(c *fiber.Ctx) error {
-	user, _ := auth.GetUserByUsername(c.Locals("username").(string))
+	user, _ := db.UsersDB.GetUserByUsername(c.Locals("username").(string))
 
 	return c.JSON(user.Timestamps)
 }
