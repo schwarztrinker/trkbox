@@ -23,14 +23,6 @@ func GetUserByUsername(u string) (*db.User, error) {
 	return nil, errors.New("No user found")
 }
 
-func Restricted(c *fiber.Ctx) error {
-	user := c.Locals("user").(*jwt.Token)
-	claims := user.Claims.(jwt.MapClaims)
-	name := claims["name"].(string)
-
-	return c.SendString("Welcome " + name + "!")
-}
-
 func Login(c *fiber.Ctx) error {
 	type LoginInput struct {
 		Identity string `json:"identity"`
@@ -74,18 +66,52 @@ func Login(c *fiber.Ctx) error {
 }
 
 func CreateUser(c *fiber.Ctx) error {
-	usr := new(db.User)
+	type UserInput struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+	var userInput UserInput
 
-	if err := c.BodyParser(&usr); err != nil {
+	if err := c.BodyParser(&userInput); err != nil {
 		return err
 	}
 
-	usr, err := GetUserByUsername(usr.Username)
+	usr, err := GetUserByUsername(userInput.Username)
 	if usr != nil && err == nil {
 		return c.Status(fiber.StatusNotAcceptable).JSON(fiber.Map{"status": "error", "message": "Username already exists"})
 	}
 
-	db.UsersDB.CreateNewUser(*usr)
+	db.UsersDB.CreateNewUser(userInput.Username, userInput.Password)
 
-	return c.JSON(usr)
+	return c.JSON(fiber.Map{"status": "success", "message": "User successfully created"})
+}
+
+func CheckUserFromToken(c *fiber.Ctx) error {
+	user := c.Locals("user").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	name := claims["name"].(string)
+
+	userObj, err := GetUserByUsername(name)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "error", "message": "Incorrect User in Token", "data": err})
+	}
+
+	c.Locals("username", userObj.Username)
+	return c.Next()
+}
+
+func Restricted(c *fiber.Ctx) error {
+	user := c.Locals("user").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	name := claims["name"].(string)
+
+	return c.SendString("Welcome " + name + "!")
+}
+
+func Whoami(c *fiber.Ctx) error {
+	user := c.Locals("user").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	name := claims["name"].(string)
+
+	return c.JSON(fiber.Map{"status": "success", "message": "You are logged in as user", "data": name})
 }

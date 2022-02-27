@@ -18,7 +18,8 @@ func main() {
 	conf.Conf.GetConf()
 
 	// Loading Timestamp DB
-	db.LoadingTimestampsGlobalFromDB()
+	db.ConnectDB()
+	//db.LoadingTimestampsGlobalFromDB()
 	db.UsersDB.LoadUserDB()
 
 	// setup fiber router

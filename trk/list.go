@@ -6,7 +6,7 @@ import (
 )
 
 func ListAll(c *fiber.Ctx) error {
-	user, _ := auth.GetUserByUsername(c.Locals("user").(string))
+	user, _ := auth.GetUserByUsername(c.Locals("username").(string))
 
 	return c.JSON(user.Timestamps)
 }

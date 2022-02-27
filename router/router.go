@@ -3,57 +3,43 @@ package router
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/golang-jwt/jwt/v4"
 	"github.com/schwarztrinker/trkbox/auth"
 	"github.com/schwarztrinker/trkbox/conf"
+	"github.com/schwarztrinker/trkbox/handler"
 	"github.com/schwarztrinker/trkbox/trk"
 
 	jwtware "github.com/gofiber/jwt/v3"
 )
 
 func SetupRouter(app *fiber.App) {
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Your Trkbox instance is running!")
-	})
+	app.Get("/", handler.Root)
+	app.Get("/ping", handler.Pong)
 
-	app.Get("/ping", func(c *fiber.Ctx) error {
-		return c.SendString("pong")
-	})
-
-	// API Middleware
+	// /api Middleware
 	api := app.Group("/api", logger.New())
-	api.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Nice to see you using Trkbox! Please Login at /api/auth/login")
-	})
+	api.Get("/", handler.Api)
 
-	// Auth
+	// /api/auth
 	apiAuth := api.Group("/auth")
 	apiAuth.Post("/login", auth.Login)
 	apiAuth.Post("/create", auth.CreateUser)
 
-	// Trkbox group
+	// /api/trk
 	apiTrk := api.Group("/trk")
-	// Apply JWT Middleware with signing key
+	// Apply JWT Middleware with signing key to all /api/trk requests
 	apiTrk.Use(jwtware.New(jwtware.Config{
 		SigningKey: []byte(conf.Conf.JwtSecret),
 	}))
 
-	apiTrk.Use(func(c *fiber.Ctx) error {
-		user := c.Locals("user").(*jwt.Token)
-		claims := user.Claims.(jwt.MapClaims)
-		name := claims["name"].(string)
+	// Middleware to check if User to the provided token exists
+	// forces check on /api/trk/*
+	apiTrk.Use("/", auth.CheckUserFromToken)
 
-		userObj, err := auth.GetUserByUsername(name)
-		if err != nil {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "error", "message": "Incorrect User in Token", "data": err})
-		}
-
-		c.Locals("user", userObj.Username)
-		return c.Next()
-	})
-
+	// /api/trk application routes
 	apiTrk.Get("/", auth.Restricted)
+	apiTrk.Get("/whoami", auth.Whoami)
 	apiTrk.Get("/list/all", trk.ListAll)
+	apiTrk.Post("/submit", trk.SubmitTimestamp)
 	// apiTrk.Get("/list/date")
 	// apiTrk.Get("/list/week")
 

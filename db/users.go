@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/schwarztrinker/trkbox/util"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -17,30 +16,27 @@ type Users struct {
 }
 
 type User struct {
-	Username     string          `json:"username"`
-	PasswordHash []byte          `json:"passwordHash"`
-	Password     string          `json:"password"`
-	Timestamps   util.Timestamps `json:"timestamps"`
+	Username     string     `json:"username"`
+	PasswordHash []byte     `json:"passwordHash"`
+	Timestamps   Timestamps `json:"timestamps"`
 }
 
-func (u *Users) CreateNewUser(user User) *Users {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), 10)
+func (u *Users) CreateNewUser(username string, password string) *Users {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 10)
 	if err != nil {
 		panic(err)
 	}
 
-	user.PasswordHash = hashedPassword
-	//remove password before saving
-	user.Password = ""
-	// GenerateFromPassword returns a byte slice so we need to
-	// convert the bytes to a string and return it
+	// Generate new user and insert data
+	user := new(User)
+	user.Init(username, hashedPassword)
 
-	UsersDB.Users = append(UsersDB.Users, user)
-	u.saveUserDB()
+	UsersDB.Users = append(UsersDB.Users, *user)
+	u.SaveDB()
 	return u
 }
 
-func (u *Users) saveUserDB() *Users {
+func (u *Users) SaveDB() *Users {
 
 	file, _ := json.MarshalIndent(u, "", " ")
 
@@ -70,4 +66,9 @@ func (u *Users) LoadUserDB() *Users {
 	defer jsonFile.Close()
 	UsersDB.Users = append(UsersDB.Users, users.Users...)
 	return u
+}
+
+func (u *User) Init(username string, passwordHash []byte) {
+	u.Username = username
+	u.PasswordHash = passwordHash
 }

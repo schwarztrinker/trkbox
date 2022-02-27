@@ -4,3 +4,6 @@ Hi, this is trkbox, a lightweight server to track my office hours - i would also
 ## trkctl
 trkctl is a CLI tool, which supports the communication with trkbox. You can find it here: https://github.com/schwarztrinker/trkctl
 
+
+## Dev Environment
+

@@ -2,22 +2,12 @@ package util
 
 import (
 	"time"
+
+	"github.com/schwarztrinker/trkbox/db"
 )
 
-// TimeStamp struct
-type Timestamps struct {
-	Timestamps []Timestamp `json:"timestamps"`
-}
-
-// TimeStamp struct
-type Timestamp struct {
-	Id        int       `json:"id"`
-	Date      time.Time `json:"date"`
-	IsCheckin bool      `json:"isCheckin"`
-}
-
 type SummaryToday struct {
-	TimestampsToday   Timestamps    `json:"timestamps"`
+	TimestampsToday   db.Timestamps `json:"timestamps"`
 	DifferenceFloat   float32       `json:"differenceFloat"`
 	TotalAbsoluteTime time.Duration `json:"totalAbsoluteTime"`
 	Percentage        int           `json:"percentage"`
@@ -25,8 +15,8 @@ type SummaryToday struct {
 }
 
 type SummaryWeek struct {
-	TimestampsWeek    Timestamps `json:"timestamps"`
-	TotalFloat        float32    `json:"differenceFloat"`
-	TotalAbsoluteTime string     `json:"totalAbsoluteTime"`
-	TotalWorkingDays  int        `json:"totalWorkingDays"`
+	TimestampsWeek    db.Timestamps `json:"timestamps"`
+	TotalFloat        float32       `json:"differenceFloat"`
+	TotalAbsoluteTime string        `json:"totalAbsoluteTime"`
+	TotalWorkingDays  int           `json:"totalWorkingDays"`
 }
