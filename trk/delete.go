@@ -15,7 +15,10 @@ func DeleteTimestamp(c *fiber.Ctx) error {
 		c.JSON(fiber.Map{"status": "error", "message": "Timestamp Id could not be parsed", "data": nil})
 	}
 
-	user.Timestamps.DeleteTimestampByUuid(parsedUid)
+	_, err = user.Timestamps.DeleteTimestampByUuid(parsedUid)
+	if err != nil {
+		return c.JSON(fiber.Map{"status": "error", "message": err.Error(), "data": nil})
+	}
 
 	return c.JSON(fiber.Map{"status": "success", "message": "Timestamp deleted", "data": parsedUid})
 }

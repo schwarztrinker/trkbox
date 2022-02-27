@@ -27,10 +27,10 @@ func (t *Timestamps) AppendTimestamp(ts Timestamp) *Timestamp {
 	return &ts
 }
 
-func (t *Timestamps) DeleteTimestampByUuid(uuid uuid.UUID) *Timestamp {
+func (t *Timestamps) DeleteTimestampByUuid(uuid uuid.UUID) (*Timestamp, error) {
 	ts, index, err := t.GetTimestampAndIndexByUUID(uuid)
 	if err != nil {
-		panic("Timestamp deletion not possible, no timestamp was found")
+		return nil, err
 	}
 
 	t.Timestamps[index] = t.Timestamps[len(t.Timestamps)-1]
@@ -40,7 +40,7 @@ func (t *Timestamps) DeleteTimestampByUuid(uuid uuid.UUID) *Timestamp {
 	t.Timestamps = t.Timestamps[:len(t.Timestamps)-1] // Truncate slice.
 	UsersDB.SaveDB()
 
-	return ts
+	return ts, nil
 }
 
 func (t *Timestamps) GetTimestampAndIndexByUUID(uuid uuid.UUID) (*Timestamp, int, error) {
@@ -50,6 +50,22 @@ func (t *Timestamps) GetTimestampAndIndexByUUID(uuid uuid.UUID) (*Timestamp, int
 		}
 	}
 	return nil, 0, errors.New("No timestamp Found")
+}
+
+func (t *Timestamps) GetTimestampsByDay(day string) (*Timestamps, error) {
+	// Get all timestampsGlobal from the Day
+	var out Timestamps
+	for _, v := range t.Timestamps {
+		if v.Date.Format("2006-01-02") == day {
+			out.Timestamps = append(out.Timestamps, v)
+		}
+	}
+
+	if len(out.Timestamps) == 0 {
+		return nil, errors.New("No Timestamps found")
+	}
+
+	return &out, nil
 }
 
 // // func DeleteTimestampByID(id int) {

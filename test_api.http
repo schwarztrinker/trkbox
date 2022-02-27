@@ -38,6 +38,10 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDYyMTk3N
 GET http://127.0.0.1:3000/api/trk/ HTTP/1.1
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDYyMTk3NzQsIm5hbWUiOiJtYWRkaW4ifQ.Y4gnPbY-j-BsiHtBWXHcATxpW8n1Xdg6Bfzw4Ni-S6M
 
+### Testing fiber
+GET http://127.0.0.1:3000/api/trk/list/date/2022-02-25 HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDYyMTk3NzQsIm5hbWUiOiJtYWRkaW4ifQ.Y4gnPbY-j-BsiHtBWXHcATxpW8n1Xdg6Bfzw4Ni-S6M
+
 ### Send a new Timestamp to the backend
 POST http://127.0.0.1:3000/api/trk/submit HTTP/1.1
 content-type: application/json
@@ -49,7 +53,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDYyMTk3N
 }
 
 ### Send a new Timestamp to the backend
-POST http://127.0.0.1:3000/api/trk/delete/f1b3dc64-300f-47a0-8797-8af5bbae056a HTTP/1.1
+POST http://127.0.0.1:3000/api/trk/delete/0 HTTP/1.1
 content-type: application/json
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDYyMTk3NzQsIm5hbWUiOiJtYWRkaW4ifQ.Y4gnPbY-j-BsiHtBWXHcATxpW8n1Xdg6Bfzw4Ni-S6M
 
