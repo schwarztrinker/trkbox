@@ -47,10 +47,10 @@ func Login(c *fiber.Ctx) error {
 	// Generate encoded token and send it as response.
 	t, err := token.SignedString([]byte(conf.Conf.JwtSecret))
 	if err != nil {
-		return c.SendStatus(fiber.StatusInternalServerError)
+		return c.Status(fiber.StatusConflict).JSON(fiber.Map{"status": "error", "message": err, "data": nil})
 	}
 
-	return c.JSON(fiber.Map{"token": t})
+	return c.JSON(fiber.Map{"status": "success", "message": "Token generated for user", "data": t})
 }
 
 func CreateUser(c *fiber.Ctx) error {
