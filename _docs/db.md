@@ -1,4 +1,4 @@
-# Test DB
+# Database
 
 Running a database for the test environment
 

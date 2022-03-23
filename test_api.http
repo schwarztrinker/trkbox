@@ -12,7 +12,7 @@ POST http://127.0.0.1:3000/api/auth/create HTTP/1.1
 content-type: application/json
 
 {
-   "username": "maddin2",
+   "username": "maddin1",
    "password": "test1234"
 }
 
@@ -28,7 +28,7 @@ content-type: application/json
 
 ### Testing fiber
 GET http://127.0.0.1:3000/api/trk/whoami HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDgzMDkyODEsIm5hbWUiOiJtYWRkaW4xIn0.boyZzBcMIEBBr2GC4_oJEyiubftDykfoctZ18u4w0z6
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDgzMDkyODEsIm5hbWUiOiJtYWRkaW4xIn0.boyZzBcMIEBBr2GC4_oJEyiubftDykfoctZ18u4w0z8
 ### Testing fiber
 GET http://127.0.0.1:3000/api/trk/list/all HTTP/1.1
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDgzMDkyODEsIm5hbWUiOiJtYWRkaW4xIn0.boyZzBcMIEBBr2GC4_oJEyiubftDykfoctZ18u4w0z8
@@ -37,7 +37,7 @@ GET http://127.0.0.1:3000/api/trk/ HTTP/1.1
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDgzMDkyODEsIm5hbWUiOiJtYWRkaW4xIn0.boyZzBcMIEBBr2GC4_oJEyiubftDykfoctZ18u4w0z8
 
 ### Testing fiber
-GET http://127.0.0.1:3000/api/trk/list/date/2022-02-25 HTTP/1.1
+GET http://127.0.0.1:3000/api/trk/list/date/2022-02-26 HTTP/1.1
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDgzMDkyODEsIm5hbWUiOiJtYWRkaW4xIn0.boyZzBcMIEBBr2GC4_oJEyiubftDykfoctZ18u4w0z8
 ### Send a new Timestamp to the backend
 POST http://127.0.0.1:3000/api/trk/submit HTTP/1.1
@@ -45,8 +45,8 @@ content-type: application/json
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDgzMDkyODEsIm5hbWUiOiJtYWRkaW4xIn0.boyZzBcMIEBBr2GC4_oJEyiubftDykfoctZ18u4w0z8
 
 {
-   "time": "2022-02-26T07:42:31+01:00",
-   "isCheckin": true
+   "time": "2022-02-26T10:42:30+01:00",
+   "isCheckin": false
 }
 
 ### Send a new Timestamp to the backend
@@ -54,7 +54,9 @@ POST http://127.0.0.1:3000/api/trk/delete/ffe25b16-e885-4d53-a616-a6f1e9d60b17 H
 content-type: application/json
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDgzMDkyODEsIm5hbWUiOiJtYWRkaW4xIn0.boyZzBcMIEBBr2GC4_oJEyiubftDykfoctZ18u4w0z8
 
-# ### Get a summary for a specific Day e.g. 2022-02-15
-# GET http://127.0.0.1:13370/summary/day/2022-02-15 HTTP/1.1
+### Get a summary for a specific Day e.g. 2022-02-15
+GET http://127.0.0.1:3000/api/trk/summary/date/2022-02-26 HTTP/1.1
+content-type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDgzMDkyODEsIm5hbWUiOiJtYWRkaW4xIn0.boyZzBcMIEBBr2GC4_oJEyiubftDykfoctZ18u4w0z8
 
 

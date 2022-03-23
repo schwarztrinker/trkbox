@@ -21,5 +21,5 @@ func InitMariaDB() {
 	}
 
 	// Migrate the schema
-	maria.AutoMigrate(&Timestamp{}, &User{})
+	maria.AutoMigrate(&User{}, &Timestamp{})
 }

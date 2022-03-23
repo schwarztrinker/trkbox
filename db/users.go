@@ -30,7 +30,7 @@ func GetUserByUsername(u string) (*User, error) {
 	var user *User
 
 	maria.Where("username = ?", u).First(&user)
-	if user != nil {
+	if user != nil && UserExists(user.Username) {
 		return user, nil
 	}
 
