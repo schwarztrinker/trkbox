@@ -21,10 +21,15 @@ func main() {
 	conf.Conf.GetConf()
 
 	//db.LoadingTimestampsGlobalFromDB()
-	db.UsersDB.LoadUserDB()
+	//db.UsersDB.LoadUserDB()
+
 	// setup fiber router
 	router.SetupRouter(app)
 
+	// initialize gorm db
+	db.InitMariaDB()
+
 	// run fiber at configured port
 	log.Fatal(app.Listen(":" + conf.Conf.Port))
+
 }

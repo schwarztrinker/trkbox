@@ -24,7 +24,7 @@ func Login(c *fiber.Ctx) error {
 	identity := input.Identity
 	password := input.Password
 
-	user, err := db.UsersDB.GetUserByUsername(identity)
+	user, err := db.GetUserByUsername(identity)
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "error", "message": "Error on username", "data": err})
 	}
@@ -64,12 +64,11 @@ func CreateUser(c *fiber.Ctx) error {
 		return err
 	}
 
-	usr, err := db.UsersDB.GetUserByUsername(userInput.Username)
-	if usr != nil && err == nil {
+	if db.UserExists(userInput.Username) {
 		return c.Status(fiber.StatusNotAcceptable).JSON(fiber.Map{"status": "error", "message": "Username already exists"})
 	}
 
-	db.UsersDB.CreateNewUser(userInput.Username, userInput.Password)
+	db.CreateNewUser(userInput.Username, userInput.Password)
 
 	return c.JSON(fiber.Map{"status": "success", "message": "User successfully created"})
 }
@@ -79,7 +78,7 @@ func CheckUserFromToken(c *fiber.Ctx) error {
 	claims := user.Claims.(jwt.MapClaims)
 	name := claims["name"].(string)
 
-	userObj, err := db.UsersDB.GetUserByUsername(name)
+	userObj, err := db.GetUserByUsername(name)
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "error", "message": "Incorrect User in Token", "data": err})
 	}

@@ -12,7 +12,7 @@ POST http://127.0.0.1:3000/api/auth/create HTTP/1.1
 content-type: application/json
 
 {
-   "username": "maddin",
+   "username": "maddin1",
    "password": "test1234"
 }
 
@@ -22,17 +22,16 @@ POST http://127.0.0.1:3000/api/auth/login HTTP/1.1
 content-type: application/json
 
 {
-   "identity": "maddin",
+   "identity": "maddin1",
    "password": "test1234"
 }
 
 ### Testing fiber
 GET http://127.0.0.1:3000/api/trk/whoami HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDYyMTk3NzQsIm5hbWUiOiJtYWRkaW4ifQ.Y4gnPbY-j-BsiHtBWXHcATxpW8n1Xdg6Bfzw4Ni-S6M
-
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDgzMDc0OTQsIm5hbWUiOiJtYWRkaW4xIn0.Tmc1OrnSG-0y3ElG_oBMa9EOzDRmxDoumxIzd_Uq8zI
 ### Testing fiber
 GET http://127.0.0.1:3000/api/trk/list/all HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDYyMTk3NzQsIm5hbWUiOiJtYWRkaW4ifQ.Y4gnPbY-j-BsiHtBWXHcATxpW8n1Xdg6Bfzw4Ni-S6M
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDgzMDc0OTQsIm5hbWUiOiJtYWRkaW4xIn0.Tmc1OrnSG-0y3ElG_oBMa9EOzDRmxDoumxIzd_Uq8zI
 
 ### Testing fiber
 GET http://127.0.0.1:3000/api/trk/ HTTP/1.1
@@ -45,7 +44,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDYyMTk3N
 ### Send a new Timestamp to the backend
 POST http://127.0.0.1:3000/api/trk/submit HTTP/1.1
 content-type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDYyMTk3NzQsIm5hbWUiOiJtYWRkaW4ifQ.Y4gnPbY-j-BsiHtBWXHcATxpW8n1Xdg6Bfzw4Ni-S6M
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDgzMDc0OTQsIm5hbWUiOiJtYWRkaW4xIn0.Tmc1OrnSG-0y3ElG_oBMa9EOzDRmxDoumxIzd_Uq8zI
 
 {
    "date": "2022-02-26T07:42:31+01:00",

@@ -1,97 +1,54 @@
 package db
 
 import (
-	"encoding/json"
 	"errors"
-	"fmt"
-	"io/ioutil"
-	"os"
 
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
-var UsersDB Users
-
-type Users struct {
-	Users []User `json:"users"`
-}
-
 type User struct {
-	Username     string     `json:"username"`
-	PasswordHash []byte     `json:"passwordHash"`
-	Timestamps   Timestamps `json:"timestamps"`
+	gorm.Model
+	Username     string `json:"username"`
+	PasswordHash []byte
+	Timestamps   []Timestamp `json:"timestamps"`
 }
 
-func (p *Users) GetUserByUsername(u string) (*User, error) {
-	for index, i := range UsersDB.Users {
-		if i.Username == u {
-			return &UsersDB.Users[index], nil
-		}
+func UserExists(u string) bool {
+	var user []User
+
+	maria.Where("username = ?", u).Find(&user)
+
+	if len(user) > 0 {
+		return true
 	}
+
+	return false
+}
+
+func GetUserByUsername(u string) (*User, error) {
+	var user *User
+
+	maria.Where("username = ?", u).First(&user)
+	if user != nil {
+		return user, nil
+	}
+
 	return nil, errors.New("No user found")
 }
 
-func (u *Users) AddTimestampToUser(username string, ts Timestamp) *Users {
-	for _, i := range UsersDB.Users {
-		if i.Username == username {
-			i.Timestamps.Timestamps = append(i.Timestamps.Timestamps, ts)
-		}
-	}
-
-	UsersDB.SaveDB()
-
-	return u
-}
-
-func (u *Users) CreateNewUser(username string, password string) *Users {
+func CreateNewUser(username string, password string) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 10)
 	if err != nil {
 		panic(err)
 	}
 
 	// Generate new user and insert data
-	user := new(User)
-	user.Init(username, hashedPassword)
+	user := User{Username: username, PasswordHash: hashedPassword}
 
-	UsersDB.Users = append(UsersDB.Users, *user)
-	u.SaveDB()
-	return u
-}
-
-func (u *Users) SaveDB() *Users {
-
-	file, _ := json.MarshalIndent(u, "", " ")
-
-	_ = ioutil.WriteFile("users.json", file, 0644)
-	return u
-}
-
-func (u *Users) LoadUserDB() *Users {
-	jsonFile, err := os.Open("users.json")
-	// if we os.Open returns an error then handle it
-	if err != nil {
-		fmt.Println(err)
+	result := maria.Create(&user) // pass pointer of data to Create
+	if result.Error != nil {
+		panic(result.Error)
 	}
 
-	var users Users
-
-	byteValue, err := ioutil.ReadAll(jsonFile)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	err = json.Unmarshal(byteValue, &users)
-	if err != nil {
-		fmt.Println(err)
-	}
-	// defer the closing of our jsonFile so that we can parse it later on
-	defer jsonFile.Close()
-
-	UsersDB = users
-	return u
-}
-
-func (u *User) Init(username string, passwordHash []byte) {
-	u.Username = username
-	u.PasswordHash = passwordHash
 }

@@ -6,15 +6,17 @@ import (
 )
 
 func ListAll(c *fiber.Ctx) error {
-	user, _ := db.UsersDB.GetUserByUsername(c.Locals("username").(string))
-	return c.JSON(fiber.Map{"status": "success", "message": "Timestamps available for this date", "data": user.Timestamps})
+	user, _ := db.GetUserByUsername(c.Locals("username").(string))
+	ts := db.GetTimestampsFromUser(*user)
+
+	return c.JSON(fiber.Map{"status": "success", "message": "Timestamps available for this date", "data": ts})
 }
 
 func ListDate(c *fiber.Ctx) error {
-	user, _ := db.UsersDB.GetUserByUsername(c.Locals("username").(string))
+	user, _ := db.GetUserByUsername(c.Locals("username").(string))
 	date := c.Params("date")
 
-	ts, err := user.Timestamps.GetTimestampsByDay(date)
+	ts, err := db.GetTimestampsByDay(*user, date)
 	if err != nil {
 		return c.JSON(fiber.Map{"status": "error", "message": "No timestamps found for this date", "data": nil})
 	}
