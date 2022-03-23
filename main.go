@@ -20,16 +20,13 @@ func main() {
 	// loading conf from yaml file
 	conf.Conf.GetConf()
 
-	//db.LoadingTimestampsGlobalFromDB()
-	//db.UsersDB.LoadUserDB()
+	// initialize gorm db
+	db.InitMariaDB()
 
 	// setup fiber router
 	router.SetupRouter(app)
 
-	// initialize gorm db
-	db.InitMariaDB()
-
 	// run fiber at configured port
 	log.Fatal(app.Listen(":" + conf.Conf.Port))
-
+	// nothing will be executed after the fiber app.Listen Command !!!
 }

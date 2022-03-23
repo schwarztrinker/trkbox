@@ -28,13 +28,13 @@ content-type: application/json
 
 ### Testing fiber
 GET http://127.0.0.1:3000/api/trk/whoami HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDgzMDkyODEsIm5hbWUiOiJtYWRkaW4xIn0.boyZzBcMIEBBr2GC4_oJEyiubftDykfoctZ18u4w0z8
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDgzMDkyODEsIm5hbWUiOiJtYWRkaW4xIn0.boyZzBcMIEBBr2GC4_oJEyiubftDykfoctZ18u4w0z6
 ### Testing fiber
 GET http://127.0.0.1:3000/api/trk/list/all HTTP/1.1
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDgzMDkyODEsIm5hbWUiOiJtYWRkaW4xIn0.boyZzBcMIEBBr2GC4_oJEyiubftDykfoctZ18u4w0z8
 ### Testing fiber
 GET http://127.0.0.1:3000/api/trk/ HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDYyMTk3NzQsIm5hbWUiOiJtYWRkaW4ifQ.Y4gnPbY-j-BsiHtBWXHcATxpW8n1Xdg6Bfzw4Ni-S6M
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDgzMDkyODEsIm5hbWUiOiJtYWRkaW4xIn0.boyZzBcMIEBBr2GC4_oJEyiubftDykfoctZ18u4w0z8
 
 ### Testing fiber
 GET http://127.0.0.1:3000/api/trk/list/date/2022-02-25 HTTP/1.1
