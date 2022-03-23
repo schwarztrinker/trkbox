@@ -12,7 +12,7 @@ POST http://127.0.0.1:3000/api/auth/create HTTP/1.1
 content-type: application/json
 
 {
-   "username": "maddin1",
+   "username": "maddin2",
    "password": "test1234"
 }
 
@@ -22,72 +22,39 @@ POST http://127.0.0.1:3000/api/auth/login HTTP/1.1
 content-type: application/json
 
 {
-   "identity": "maddin1",
+   "identity": "maddin2",
    "password": "test1234"
 }
 
 ### Testing fiber
 GET http://127.0.0.1:3000/api/trk/whoami HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDgzMDc0OTQsIm5hbWUiOiJtYWRkaW4xIn0.Tmc1OrnSG-0y3ElG_oBMa9EOzDRmxDoumxIzd_Uq8zI
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDgzMDkyODEsIm5hbWUiOiJtYWRkaW4xIn0.boyZzBcMIEBBr2GC4_oJEyiubftDykfoctZ18u4w0z8
 ### Testing fiber
 GET http://127.0.0.1:3000/api/trk/list/all HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDgzMDc0OTQsIm5hbWUiOiJtYWRkaW4xIn0.Tmc1OrnSG-0y3ElG_oBMa9EOzDRmxDoumxIzd_Uq8zI
-
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDgzMDkyODEsIm5hbWUiOiJtYWRkaW4xIn0.boyZzBcMIEBBr2GC4_oJEyiubftDykfoctZ18u4w0z8
 ### Testing fiber
 GET http://127.0.0.1:3000/api/trk/ HTTP/1.1
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDYyMTk3NzQsIm5hbWUiOiJtYWRkaW4ifQ.Y4gnPbY-j-BsiHtBWXHcATxpW8n1Xdg6Bfzw4Ni-S6M
 
 ### Testing fiber
 GET http://127.0.0.1:3000/api/trk/list/date/2022-02-25 HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDYyMTk3NzQsIm5hbWUiOiJtYWRkaW4ifQ.Y4gnPbY-j-BsiHtBWXHcATxpW8n1Xdg6Bfzw4Ni-S6M
-
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDgzMDkyODEsIm5hbWUiOiJtYWRkaW4xIn0.boyZzBcMIEBBr2GC4_oJEyiubftDykfoctZ18u4w0z8
 ### Send a new Timestamp to the backend
 POST http://127.0.0.1:3000/api/trk/submit HTTP/1.1
 content-type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDgzMDc0OTQsIm5hbWUiOiJtYWRkaW4xIn0.Tmc1OrnSG-0y3ElG_oBMa9EOzDRmxDoumxIzd_Uq8zI
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDgzMDkyODEsIm5hbWUiOiJtYWRkaW4xIn0.boyZzBcMIEBBr2GC4_oJEyiubftDykfoctZ18u4w0z8
 
 {
-   "date": "2022-02-26T07:42:31+01:00",
+   "time": "2022-02-26T07:42:31+01:00",
    "isCheckin": true
 }
 
 ### Send a new Timestamp to the backend
-POST http://127.0.0.1:3000/api/trk/delete/0 HTTP/1.1
+POST http://127.0.0.1:3000/api/trk/delete/ffe25b16-e885-4d53-a616-a6f1e9d60b17 HTTP/1.1
 content-type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDYyMTk3NzQsIm5hbWUiOiJtYWRkaW4ifQ.Y4gnPbY-j-BsiHtBWXHcATxpW8n1Xdg6Bfzw4Ni-S6M
-
-
-
-# ### Ping Test Request
-# GET http://127.0.0.1:13370/ping HTTP/1.1
-
-# ### List all timestamps
-# GET http://127.0.0.1:13370/list HTTP/1.1
-
-# ### Send a new Timestamp to the backend
-# POST http://127.0.0.1:13370/stamp HTTP/1.1
-# content-type: application/json
-
-# {
-#    "date": "2022-02-13T07:42:31+01:00",
-#    "isCheckin": true
-# }
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDgzMDkyODEsIm5hbWUiOiJtYWRkaW4xIn0.boyZzBcMIEBBr2GC4_oJEyiubftDykfoctZ18u4w0z8
 
 # ### Get a summary for a specific Day e.g. 2022-02-15
 # GET http://127.0.0.1:13370/summary/day/2022-02-15 HTTP/1.1
 
-
-# ### Login and get token
-# POST http://127.0.0.1:13370/login HTTP/1.1
-# content-type: application/json
-
-# {
-#    "username": "username",
-#    "password": "password"
-# }
-
-# ### Do sample get request with a token
-# GET http://127.0.0.1:13370/ HTTP/1.1
-# content-type: application/json
-# Authorization: Baerer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRob3JpemVkIjp0cnVlLCJjbGllbnQiOiIiLCJleHAiOjE2NDU4NzI0NDd9.IYsnqk4uJ40u0qeb6QY0TWw2Ha7eGNrWc3cbyRdYKdY
 

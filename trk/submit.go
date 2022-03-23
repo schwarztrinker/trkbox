@@ -19,7 +19,10 @@ func SubmitTimestamp(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "error", "message": "Timestamp could not be parsed"})
 	}
 
-	data := db.AddTimestamp(*user, t)
+	data, err := db.AddTimestamp(*user, t)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "error", "message": "Timestamp could not be added to our db. Please try again later!"})
+	}
 
 	return c.JSON(fiber.Map{"status": "success", "message": "Timestamp saved successful", "data": data})
 }

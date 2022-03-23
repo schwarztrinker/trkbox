@@ -3,7 +3,7 @@ module github.com/schwarztrinker/trkbox
 go 1.17
 
 require (
-	github.com/gofiber/fiber/v2 v2.27.0
+	github.com/gofiber/fiber/v2 v2.30.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/gorilla/mux v1.8.0
 	golang.org/x/crypto v0.0.0-20220214200702-86341886e292
@@ -54,9 +54,9 @@ require (
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/gofiber/jwt/v3 v3.2.6
 	github.com/google/uuid v1.3.0
-	github.com/klauspost/compress v1.14.4 // indirect
+	github.com/klauspost/compress v1.15.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
-	github.com/valyala/fasthttp v1.33.0 // indirect
+	github.com/valyala/fasthttp v1.34.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
 	golang.org/x/sys v0.0.0-20220310020820-b874c991c1a5 // indirect
 	gopkg.in/yaml.v2 v2.4.0

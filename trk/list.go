@@ -21,5 +21,5 @@ func ListDate(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"status": "error", "message": "No timestamps found for this date", "data": nil})
 	}
 
-	return c.JSON(fiber.Map{"status": "success", "message": "Timestamps available for this date", "data": ts})
+	return c.JSON(fiber.Map{"status": "success", "message": "Timestamps for this date", "data": ts})
 }
