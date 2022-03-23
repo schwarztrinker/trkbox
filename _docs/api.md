@@ -13,7 +13,8 @@
         - GET   /whoami - _Return username_
 
         - POST  /submit - _Save a new timestamp_
-        - POST  /delete/:id - _Delete a timestamp by ID_
+        - POST  /delete/:uuid - _Delete a timestamp by UUID_
+        - POST  /delete/:id - _Delete a timestamp by UUID_
 
         - GET   /list/all - _List all your Timestamps_
         - GET   /list/date/:date - _List all Timestamps for specific day_

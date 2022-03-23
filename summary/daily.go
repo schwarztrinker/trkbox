@@ -7,14 +7,22 @@ import (
 )
 
 type SummaryToday struct {
-	TimestampsToday                []db.Timestamp `json:"timestamps"`
-	DifferenceFloat                float32        `json:"differenceFloat"`
-	TotalAbsoluteTime              time.Duration  `json:"totalAbsoluteTime"`
-	TotalAbsoluteTimeHumanReadable string         `json:"totalAbsoluteTimeHR"`
-	Percentage                     int            `json:"percentage"`
-	IsComplete                     bool           `json:"isComplete"`
-	Username                       string
-	Date                           string
+	TimestampsToday           []db.Timestamp `json:"timestamps"`
+	DifferenceFloat           float32        `json:"differenceFloat"`
+	TotalTimeDurationTime     time.Duration  `json:"totalTimeDurationTime"`
+	TotalTimeDurationReadable string         `json:"totalTimeDurationReadable"`
+	Percentage                int            `json:"percentage"`
+	IsComplete                bool           `json:"isComplete"`
+	Username                  string
+	Date                      string
+	CurrentAttendanceTime     time.Duration `json:"currentAttendanceTime"`
+	CategorySums              []CategorySum `json:"categorysums"`
+}
+
+type CategorySum struct {
+	Category             string
+	TimeDuration         time.Duration
+	TimeDurationReadable string
 }
 
 func GenerateSummaryByDate(user *db.User, date string) (SummaryToday, error) {
@@ -24,18 +32,21 @@ func GenerateSummaryByDate(user *db.User, date string) (SummaryToday, error) {
 	}
 
 	return SummaryToday{
+		IsComplete:      calculateIsComplete(timestamps),
+		Percentage:      int((calculateTotalPresenceDuration(timestamps).Hours() / 8) * 100),
+		DifferenceFloat: float32(calculateTotalPresenceDuration(timestamps).Hours()),
 		TimestampsToday: timestamps, Username: user.Username,
-		Date: date, IsComplete: checkinIsAlternating(timestamps),
-		TotalAbsoluteTime:              calculateTotalPresenceDuration(timestamps),
-		TotalAbsoluteTimeHumanReadable: calculateTotalPresenceDuration(timestamps).Round(time.Hour).String()}, nil
+		Date:                      date,
+		TotalTimeDurationTime:     calculateTotalPresenceDuration(timestamps),
+		TotalTimeDurationReadable: calculateTotalPresenceDuration(timestamps).String()}, nil
 }
 
 func calculateTotalPresenceDuration(ts []db.Timestamp) time.Duration {
 	var absoluteTime time.Duration
 
+	// Calculate if ts more than 1
 	if len(ts) > 1 {
-
-		for i, _ := range ts {
+		for i := range ts {
 			if i == 0 {
 				continue
 			}
@@ -44,12 +55,6 @@ func calculateTotalPresenceDuration(ts []db.Timestamp) time.Duration {
 				absoluteTime += ts[i].Time.Sub(ts[i-1].Time)
 			}
 
-		}
-	}
-
-	if len(ts) == 1 {
-		if ts[0].IsCheckin {
-			absoluteTime = time.Now().Sub(ts[0].Time)
 		}
 	}
 	return absoluteTime

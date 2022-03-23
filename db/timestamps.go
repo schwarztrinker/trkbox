@@ -15,6 +15,7 @@ type Timestamp struct {
 	Date      string    `json:"date"`
 	IsCheckin bool      `json:"isCheckin"`
 	UserID    uint
+	Category  string `json:"category"`
 }
 
 func GetTimestampAndIndexByUUID(uuid uuid.UUID) (*Timestamp, int, error) {
@@ -45,7 +46,11 @@ func GetTimestampsByDay(user User, date string) ([]Timestamp, error) {
 
 //Create Timestamps
 func AddTimestamp(user User, ts Timestamp) (*Timestamp, error) {
-	timestamp := Timestamp{Uuid: uuid.New(), UserID: user.ID, Time: ts.Time, Date: ts.Time.Format("2006-01-02"), IsCheckin: ts.IsCheckin}
+
+	timestamp := ts
+	timestamp.Uuid = uuid.New()
+	timestamp.UserID = user.ID
+	timestamp.Date = ts.Time.Format("2006-01-02")
 
 	result := maria.Create(&timestamp)
 	if result.Error != nil {
@@ -62,6 +67,18 @@ func DeleteTimestampByUuid(user User, uuid uuid.UUID) (*Timestamp, error) {
 	result := maria.Where("uuid = ? AND user_id = ?", uuid, user.ID).Delete(&ts)
 	if result.Error != nil {
 		return ts, result.Error
+	}
+
+	return ts, nil
+}
+
+// Delete Timestamps
+func DeleteTimestampById(user User, id uint) (*Timestamp, error) {
+	var ts *Timestamp
+
+	result := maria.Where("id = ? AND user_id = ?", id, user.ID).Delete(&ts)
+	if result.RowsAffected == 0 {
+		return ts, errors.New("No timestamp found or deleted")
 	}
 
 	return ts, nil
