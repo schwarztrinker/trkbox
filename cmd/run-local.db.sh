@@ -1,0 +1,1 @@
+podman run --detach --name mariadb --env MARIADB_USER=trkbox --env MARIADB_PASSWORD=trkbox --env MARIADB_ROOT_PASSWORD=trkbox -e MARIADB_DATABASE=trkbox -v /opt/trkboxdata:/var/lib/mysql:Z  -p 3306:3306 mariadb:latest
