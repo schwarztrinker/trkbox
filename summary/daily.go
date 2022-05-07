@@ -12,7 +12,6 @@ type SummaryToday struct {
 	TotalTimeDurationTime     time.Duration  `json:"totalTimeDurationTime"`
 	TotalTimeDurationReadable string         `json:"totalTimeDurationReadable"`
 	Percentage                int            `json:"percentage"`
-	IsComplete                bool           `json:"isComplete"`
 	Username                  string
 	Date                      string
 	CurrentAttendanceTime     time.Duration `json:"currentAttendanceTime"`
@@ -34,7 +33,6 @@ func GenerateSummaryByDate(user *db.User, date string) (SummaryToday, error) {
 	}
 
 	return SummaryToday{
-		IsComplete:      calculateIsComplete(timestamps),
 		Percentage:      int((calculateTotalPresenceDuration(timestamps).Hours() / 8) * 100),
 		DifferenceFloat: float32(calculateTotalPresenceDuration(timestamps).Hours()),
 		TimestampsToday: timestamps, Username: user.Username,
