@@ -6,7 +6,6 @@ import (
 	"github.com/schwarztrinker/trkbox/auth"
 	"github.com/schwarztrinker/trkbox/conf"
 	"github.com/schwarztrinker/trkbox/handler"
-	"github.com/schwarztrinker/trkbox/trk"
 
 	jwtware "github.com/gofiber/jwt/v3"
 )
@@ -38,17 +37,17 @@ func SetupRouter(app *fiber.App) {
 	// /api/trk application routes
 	apiTrk.Get("/", auth.Restricted)
 	apiTrk.Get("/whoami", auth.Whoami)
-	apiTrk.Get("/list/all", trk.ListAll)
-	apiTrk.Get("/list/date/:date", trk.ListDate)
-	apiTrk.Get("/list/week/:week", trk.ListWeek)
+	apiTrk.Get("/list/all", handler.ListAll)
+	apiTrk.Get("/list/date/:date", handler.ListDate)
+	apiTrk.Get("/list/week/:week", handler.ListWeek)
 
-	apiTrk.Post("/submit", trk.SubmitTimestamp)
-	apiTrk.Post("/delete/:uuid", trk.DeleteTimestamp)
+	apiTrk.Post("/submit", handler.SubmitTimestamp)
+	apiTrk.Post("/delete/:uuid", handler.DeleteTimestamp)
 
 	// /api/trk/summary application routes
-	apiTrk.Get("/summary/date/:date", trk.GetSummaryByDate)
+	apiTrk.Get("/summary/date/:date", handler.GetSummaryByDate)
 
-	apiTrk.Get("/summary/week/:week", trk.GetSummaryByWeek)
+	apiTrk.Get("/summary/week/:week", handler.GetSummaryByWeek)
 	// apiTrk.Get("/list/week")
 
 }
