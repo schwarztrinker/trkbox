@@ -23,6 +23,8 @@ type CategorySum struct {
 	Category             string
 	TimeDuration         time.Duration
 	TimeDurationReadable string
+	StampCounts          int
+	IsComplete           bool
 }
 
 func GenerateSummaryByDate(user *db.User, date string) (SummaryToday, error) {
@@ -38,7 +40,66 @@ func GenerateSummaryByDate(user *db.User, date string) (SummaryToday, error) {
 		TimestampsToday: timestamps, Username: user.Username,
 		Date:                      date,
 		TotalTimeDurationTime:     calculateTotalPresenceDuration(timestamps),
-		TotalTimeDurationReadable: calculateTotalPresenceDuration(timestamps).String()}, nil
+		TotalTimeDurationReadable: calculateTotalPresenceDuration(timestamps).String(),
+		CategorySums:              calculateCategorySumsToday(timestamps)}, nil
+
+}
+
+func calculateCategorySumsToday(ts []db.Timestamp) []CategorySum {
+	var categorysums []CategorySum
+
+	for _, timestamp := range ts {
+
+		var categoryExists bool = false
+		for _, categorysum := range categorysums {
+			if categorysum.Category == timestamp.Category {
+				categoryExists = true
+			}
+		}
+
+		if !categoryExists {
+			var returnCategorySum CategorySum
+			var filteredTimestamps = filterTimestampsByCategory(ts, timestamp.Category)
+
+			// calculate time for the category
+			var timeCategory time.Duration
+
+			if len(filteredTimestamps) > 1 {
+				for i := range filteredTimestamps {
+					if i == 0 {
+						continue
+					}
+
+					if filteredTimestamps[i].IsCheckin != filteredTimestamps[i-1].IsCheckin && filteredTimestamps[i-1].IsCheckin {
+						timeCategory += filteredTimestamps[i].Time.Sub(filteredTimestamps[i-1].Time)
+					}
+
+				}
+			}
+
+			returnCategorySum = CategorySum{
+				Category:             timestamp.Category,
+				TimeDuration:         timeCategory,
+				TimeDurationReadable: timeCategory.String(),
+				StampCounts:          len(filterTimestampsByCategory(ts, timestamp.Category)),
+				IsComplete:           calculateIsComplete(filteredTimestamps),
+			}
+
+			categorysums = append(categorysums, returnCategorySum)
+		}
+	}
+	return categorysums
+}
+
+// helper function to filter timestamps by categoy
+func filterTimestampsByCategory(ts []db.Timestamp, category string) []db.Timestamp {
+	var out []db.Timestamp
+	for _, timestamp := range ts {
+		if timestamp.Category == category {
+			out = append(out, timestamp)
+		}
+	}
+	return out
 }
 
 func calculateTotalPresenceDuration(ts []db.Timestamp) time.Duration {
@@ -60,6 +121,7 @@ func calculateTotalPresenceDuration(ts []db.Timestamp) time.Duration {
 	return absoluteTime
 }
 
+// helper functions to check if calculation of timestamps could be completeted
 func checkinIsAlternating(ts []db.Timestamp) bool {
 	var last bool
 	for i := range ts {
