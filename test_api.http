@@ -5,13 +5,13 @@
 ### Testing fiber
 GET http://{{host}}:{{port}}/ HTTP/1.1
 
-### Testing fiber
+### ping -> pong 
 GET http://{{host}}:{{port}}/ping HTTP/1.1
 
-### Testing fiber
+### api home
 GET http://{{host}}:{{port}}/api HTTP/1.1
 
-### Testing fiber
+### create user
 POST http://{{host}}:{{port}}/api/auth/create HTTP/1.1
 content-type: application/json
 
@@ -20,8 +20,7 @@ content-type: application/json
    "password": "test1234"
 }
 
-
-### Testing fiber
+### login user
 POST http://{{host}}:{{port}}/api/auth/login HTTP/1.1
 content-type: application/json
 
@@ -30,11 +29,11 @@ content-type: application/json
    "password": "test1234"
 }
 
-### Testing fiber
+### whoami
 GET http://{{host}}:{{port}}/api/trk/whoami HTTP/1.1
 Authorization: Bearer {{token}}
 
-### Testing fiber
+### list all timestamps
 GET http://{{host}}:{{port}}/api/trk/list/all HTTP/1.1
 Authorization: Bearer {{token}}
 
@@ -51,7 +50,6 @@ Authorization: Bearer {{token}}
 POST http://{{host}}:{{port}}/api/trk/submit HTTP/1.1
 content-type: application/json
 Authorization: Bearer {{token}}
-
 
 {
    "time": "2022-02-27T11:24:30+01:00",
