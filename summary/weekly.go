@@ -9,6 +9,7 @@ type SummaryWeek struct {
 	TotalFloat        float32        `json:"differenceFloat"`
 	TotalAbsoluteTime string         `json:"totalAbsoluteTime"`
 	TotalWorkingDays  int            `json:"totalWorkingDays"`
+	CategorySumWeek   []CategorySum
 }
 
 func GenerateSummaryByWeek(user *db.User, week string) (SummaryWeek, error) {
@@ -17,8 +18,11 @@ func GenerateSummaryByWeek(user *db.User, week string) (SummaryWeek, error) {
 		return SummaryWeek{}, err
 	}
 
+	var categorySums = calculateCategorySumsForTimestamps(ts)
+
 	return SummaryWeek{
-		TimestampsWeek: ts,
+		TimestampsWeek:  ts,
+		CategorySumWeek: categorySums,
 	}, nil
 
 }
