@@ -23,3 +23,15 @@ func ListDate(c *fiber.Ctx) error {
 
 	return c.JSON(fiber.Map{"status": "success", "message": "Timestamps for this date", "data": ts})
 }
+
+func ListWeek(c *fiber.Ctx) error {
+	user, _ := db.GetUserByUsername(c.Locals("username").(string))
+	week := c.Params("week")
+
+	ts, err := db.GetTimestampsByWeek(*user, week)
+	if err != nil {
+		return c.JSON(fiber.Map{"status": "error", "message": "No timestamps found for this date", "data": nil})
+	}
+
+	return c.JSON(fiber.Map{"status": "success", "message": "Timestamps for this date", "data": ts})
+}

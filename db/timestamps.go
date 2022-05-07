@@ -2,6 +2,8 @@ package db
 
 import (
 	"errors"
+	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -42,6 +44,42 @@ func GetTimestampsByDay(user User, date string) ([]Timestamp, error) {
 	maria.Where("date = ? AND user_id = ? ", date, user.ID).Order("time asc").Find(&ts)
 
 	return ts, nil
+}
+
+func GetTimestampsByWeek(user User, week string) ([]Timestamp, error) {
+	var ts []Timestamp
+	var intWeek, _ = strconv.Atoi(week)
+
+	start, end := WeekRange(2022, intWeek)
+	fmt.Println(start, end)
+	maria.Where("date >= ? AND date < ? AND user_id = ? ", start, end, user.ID).Order("time asc").Find(&ts)
+
+	return ts, nil
+}
+
+// week helper functions
+func WeekRange(year, week int) (start, end time.Time) {
+	start = WeekStart(year, week)
+	end = start.AddDate(0, 0, 6)
+	return
+}
+
+func WeekStart(year, week int) time.Time {
+	// Start from the middle of the year:
+	t := time.Date(year, 7, 1, 0, 0, 0, 0, time.UTC)
+
+	// Roll back to Monday:
+	if wd := t.Weekday(); wd == time.Sunday {
+		t = t.AddDate(0, 0, -6)
+	} else {
+		t = t.AddDate(0, 0, -int(wd)+1)
+	}
+
+	// Difference in weeks:
+	_, w := t.ISOWeek()
+	t = t.AddDate(0, 0, (week-w)*7)
+
+	return t
 }
 
 //Create Timestamps

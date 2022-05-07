@@ -19,10 +19,10 @@ type SummaryToday struct {
 }
 
 type CategorySum struct {
-	Category             string
-	TimeDuration         time.Duration
-	TimeDurationReadable string
-	StampCounts          int
+	Category             string        `json:"category"`
+	TimeDuration         time.Duration `json:"timeDuration"`
+	TimeDurationReadable string        `json:"timeDurationReadable"`
+	CategoryStampCounts  int           `json:"categoryStampCounts"`
 	IsComplete           bool
 }
 
@@ -79,7 +79,7 @@ func calculateCategorySumsToday(ts []db.Timestamp) []CategorySum {
 				Category:             timestamp.Category,
 				TimeDuration:         timeCategory,
 				TimeDurationReadable: timeCategory.String(),
-				StampCounts:          len(filterTimestampsByCategory(ts, timestamp.Category)),
+				CategoryStampCounts:  len(filterTimestampsByCategory(ts, timestamp.Category)),
 				IsComplete:           calculateIsComplete(filteredTimestamps),
 			}
 

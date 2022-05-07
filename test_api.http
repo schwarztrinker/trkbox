@@ -52,13 +52,13 @@ content-type: application/json
 Authorization: Bearer {{token}}
 
 {
-   "time": "2022-04-10T23:24:30+01:00",
+   "time": "2022-05-09T03:24:30+02:00",
    "isCheckin": false,
    "category": "donut"
 }
 
 ### Send a new Timestamp to the backend
-POST http://{{host}}:{{port}}/api/trk/delete/7ec81c9e-f9c5-48d2-bc21-2b97e81c17c7 HTTP/1.1
+POST http://{{host}}:{{port}}/api/trk/delete/1b7be926-2a92-406f-a6bf-ddbc763e15fd HTTP/1.1
 content-type: application/json
 Authorization: Bearer {{token}}
 
@@ -73,4 +73,17 @@ GET http://{{host}}:{{port}}/api/trk/summary/date/2022-04-10 HTTP/1.1
 content-type: application/json
 Authorization: Bearer {{token}}
 
+
+
+
+### Get list of a specific week
+GET http://{{host}}:{{port}}/api/trk/list/week/18 HTTP/1.1
+content-type: application/json
+Authorization: Bearer {{token}}
+
+
+### Get summary of a specific week
+GET http://{{host}}:{{port}}/api/trk/summary/week/18 HTTP/1.1
+content-type: application/json
+Authorization: Bearer {{token}}
 
